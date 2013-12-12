@@ -35,12 +35,12 @@
 #include "DataFormats/Common/interface/DetSet.h"
 #include "DataFormats/Common/interface/DetSetVector.h"
 #include "DataFormats/SiPixelDigi/interface/PixelDigi.h"
+#include "Phase2TrackerDAQ/SiStripDigi/interface/SiStripCommissioningDigi.h"
 #include "DataFormats/DetId/interface/DetId.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "TH1D.h"
-#include "TH1I.h"
 #include "TH2D.h"
 
 
@@ -53,8 +53,10 @@ class LL_Analysis : public edm::EDAnalyzer {
 	  
 	  // int get_chip(int strip_no);
 	  
-	  //Handles to Event
+	  //Handle to Event
       edm::Handle<edm::DetSetVector<PixelDigi> >  cbcDigis_;
+	  //Handle to Conditions Data for TDC histos
+      edm::Handle<edm::DetSet<SiStripCommissioningDigi> >  cbcCommissioningEvent_;
 	  
 	  //Histograms
 	  
@@ -64,6 +66,13 @@ class LL_Analysis : public edm::EDAnalyzer {
       TH1D * h_hits_FIX_t;
       TH1D * h_hits_FIX_b;
 	  
+	  //TDC for every hit, by sensor
+      TH1D * h_tdc_dt;
+      TH1D * h_tdc_db;
+      TH1D * h_tdc_ft;
+      TH1D * h_tdc_fb;
+	  
+	  //1 or 0 depending if hit or not
       TH1D * h_tot_dut_t;
       TH1D * h_tot_dut_b;
       TH1D * h_tot_fix_t;
@@ -109,8 +118,6 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 {
 	using namespace edm;
 
-	iEvent.getByLabel("SiStripDigitestproducer", "ProcessedRaw", cbcDigis_);
-
 	std::vector<int> hits_db;
 	std::vector<int> hits_dt;
 	std::vector<int> hits_ft;
@@ -121,8 +128,25 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	int nhits_fix_A = 0;
 	int nhits_fix_B = 0;
    
-   
+	int tdc = 0;
+	
 	// | INFCBCB | INFCBCA | CNMCBCB | CNMCBCA
+	
+	//access conditions data for tdc phase of event
+    iEvent.getByLabel("SiStripDigiCondDataproducer", "ConditionData", cbcCommissioningEvent_);
+	
+	DetSet<SiStripCommissioningDigi>::const_iterator it = cbcCommissioningEvent_->data.begin();
+	for(; it != cbcCommissioningEvent_->data.end(); it++)
+	{
+		if (it->getKey() == 0x030000ff) // TDC Phase
+		{
+			int value = it->getValue();
+			(value == 12) ? tdc = 0 : tdc = value - 4; // if not 12 -> value - 4
+		}
+	}
+   
+	//access Digis 
+	iEvent.getByLabel("SiStripDigitestproducer", "ProcessedRaw", cbcDigis_);
    
 	DetSetVector<PixelDigi>::const_iterator DSViter = cbcDigis_->begin();
 	for (; DSViter!=cbcDigis_->end(); DSViter++) //module loop
@@ -162,16 +186,23 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		} //End of hit loop
 	} //End of module loop
    		 
+	//Number of hits per chip for CM Noise
 	h_n_hits_dut_A->Fill(nhits_dut_A);
 	h_n_hits_dut_B->Fill(nhits_dut_B);
 	h_n_hits_fix_A->Fill(nhits_fix_A);
 	h_n_hits_fix_B->Fill(nhits_fix_B);
       	 	 
-	//Fill with 0/1 
+	//Hit or no Hit
 	h_tot_dut_t->Fill((hits_dt.size()) ? 1 : 0);
 	h_tot_dut_b->Fill((hits_db.size()) ? 1 : 0);
 	h_tot_fix_t->Fill((hits_ft.size()) ? 1 : 0);
 	h_tot_fix_b->Fill((hits_fb.size()) ? 1 : 0);
+	
+	//Fill tdc for event
+    if (hits_dt.size()) h_tdc_dt->Fill(tdc);
+    if (hits_db.size()) h_tdc_db->Fill(tdc);
+    if (hits_ft.size()) h_tdc_ft->Fill(tdc);
+    if (hits_fb.size()) h_tdc_fb->Fill(tdc);
    
 	LogDebug ("") << "hits dut A " << nhits_dut_A << " hits dut B " << nhits_dut_B << " hits fix A " << nhits_fix_A << " hits fix B " << nhits_fix_B ;
    
@@ -193,11 +224,18 @@ LL_Analysis::beginJob()
     h_hits_FIX_b = fs->make<TH1D>("h_hits_FIX_b","Hits FIX top",256,0.,256.);
     h_hits_FIX_t = fs->make<TH1D>("h_hits_FIX_t","Hits FIX bot",256,0.,256.);
 	
-  	h_tot_dut_t = fs->make<TH1D>("h_tot_dut_t","Hits DUT top",256,0.,256.);
-  	h_tot_dut_b = fs->make<TH1D>("h_tot_dut_b","Hits DUT bot",256,0.,256.);
-  	h_tot_fix_t = fs->make<TH1D>("h_tot_fix_t","Hits FIX top",256,0.,256.);
-  	h_tot_fix_b = fs->make<TH1D>("h_tot_fix_b","Hits FIX bot",256,0.,256.);     
-
+	//Hit or no hit per sensor
+  	h_tot_dut_t = fs->make<TH1D>("h_tot_dut_t","Hits DUT top",2,0.,2.);
+  	h_tot_dut_b = fs->make<TH1D>("h_tot_dut_b","Hits DUT bot",2,0.,2.);
+  	h_tot_fix_t = fs->make<TH1D>("h_tot_fix_t","Hits FIX top",2,0.,2.);
+  	h_tot_fix_b = fs->make<TH1D>("h_tot_fix_b","Hits FIX bot",2,0.,2.);   
+	
+	//TDC for every hit on every sensor  
+    h_tdc_dt = fs->make<TH1D>("h_tdc_dt","dut top",10,0.,10.);
+    h_tdc_db = fs->make<TH1D>("h_tdc_db","dut bottom",10,0.,10.);
+    h_tdc_ft = fs->make<TH1D>("h_tdc_ft","fix top",10,0.,10.);
+    h_tdc_fb = fs->make<TH1D>("h_tdc_fb","fix bottom",10,0.,10.);
+	
   	//Hit Distribution
   	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 256,0.,256.);
   	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 256,0.,256.);
