@@ -26,3 +26,6 @@
 # CMSSW Products
 ._*
 __*
+TestBeamAnalysis/
+python_Christophe/
+*.root
