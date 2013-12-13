@@ -54,7 +54,6 @@ namespace {
   };
 }
 
-
 #endif // DataFormats_SiStripDigi_Classes_H
 
 

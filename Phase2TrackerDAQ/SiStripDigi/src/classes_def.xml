@@ -46,7 +46,6 @@
  <class name="std::vector<SiStripCommissioningDigi>"/>
  <class name="edm::DetSet<SiStripCommissioningDigi>"/>
  <class name="edm::Wrapper<edm::DetSet<SiStripCommissioningDigi> >" splitLevel="0"/>
-
 </lcgdict>
 
 
