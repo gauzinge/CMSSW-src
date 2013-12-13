@@ -46,15 +46,7 @@
  <class name="std::vector<SiStripCommissioningDigi>"/>
  <class name="edm::DetSet<SiStripCommissioningDigi>"/>
  <class name="edm::Wrapper<edm::DetSet<SiStripCommissioningDigi> >" splitLevel="0"/>
- 
- <!-- <class name="SiStripStub" />
- <class name="std::vector<SiStripStub>"/>
- <class name="edm::DetSet<SiStripStub>"/>
- <class name="edm::DetSetVector<SiStripStub>"/>
- <class name="std::vector<edm::DetSet<SiStripStub> >"/>
- <class name="edm::Wrapper<edm::DetSet<SiStripStub> >" splitLevel="0"/>
- <class name="edm::Wrapper<std::vector<edm::DetSet<SiStripStub> > >" splitLevel="0"/>
- <class name="edm::Wrapper<edm::DetSetVector<SiStripStub> >" splitLevel="0"/> -->
+
 </lcgdict>
 
 

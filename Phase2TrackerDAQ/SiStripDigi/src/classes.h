@@ -54,14 +54,6 @@ namespace {
   };
 }
 
-// #include "Phase2TrackerDAQ/SiStripDigi/interface/SiStripStub.h"
-// namespace {
-//   struct dictionary5 {
-//     edm::Wrapper<SiStripStub > stub0;
-//     edm::Wrapper<std::vector<SiStripProcessedRawDigi> > stub1;
-//     edm::Wrapper<edm::DetSet<SiStripStub> > stub2;
-//   };
-// }
 
 #endif // DataFormats_SiStripDigi_Classes_H
 
