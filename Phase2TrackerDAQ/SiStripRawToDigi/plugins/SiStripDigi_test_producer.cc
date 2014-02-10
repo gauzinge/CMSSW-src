@@ -112,6 +112,9 @@ namespace sistrip {
 	ss << " -------------------------------------------- " << endl;
 
 	// loop channels
+	
+	//here it gets interesting:
+	
 	int ichan = 0;
 	for ( int ife = 0; ife < MAX_FE_PER_FED; ife++ )
 	{

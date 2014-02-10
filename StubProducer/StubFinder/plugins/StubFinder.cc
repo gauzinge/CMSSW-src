@@ -74,47 +74,48 @@ class StubFinder : public edm::EDProducer {
 	  std::map<int, std::set<int> > bad_strips;
 	  
    private:
-      virtual void beginJob(const edm::EventSetup&) override;
+      virtual void beginJob(const edm::EventSetup&);
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
-      
-      // ----------member data ---------------------------
-	  edm::InputTag src_;							//input file? whatever
-      DetIdCollection detids_;
-	  
+      	  
 	  //input parameter: windowsize
 	  int stub_windowsize;
-	  
-	  // edm::DetSetVector<Phase2TrackerCluster>;
- // 	  edm::DetSetVector<Phase2TrackerStub>;
+	  //input parameter: bad strip file
+	  std::string bad_strip_file;
+	
 	  int n_events;				
 };
 
 
 StubFinder::StubFinder(const edm::ParameterSet& iConfig)
 {
-   //register your products
-	src_  = iConfig.getParameter<edm::InputTag>( "src" ); 
-	stub_windowsize = iConfig.getParameter( "stub_windowsize" );
-	
-    // produces< edm::DetSetVector<Phase2TrackerCluster1D> >("Clusters"); 
-//     produces< edm::DetSetVector<Phase2TrackerStub> >("Stubs");
-		
+	//read input parameters!
+	stub_windowsize = iConfig.getParameter<int>( "stub_windowsize" );
+	bad_strip_file = iConfig.getParameter<std::string>( "bad_strip_file" );
+			
     produces< edm::DetSetVector<Phase2TrackerCluster1D> >("Clusters"); //.setBranchAlias("Cluster_branch"); 
     produces< edm::DetSetVector<Phase2TrackerStub> >("Stubs"); //.setBranchAlias("Stub_branch");
 	
    //now do what ever other initialization is needed
 	n_events = 0;
 	
-	int bad_dutt = {};
-	int bad_dutb = {};
-	int bad_fixt = {144,147,153};
-	int bad_fixb = {134,143,144,145,146,147,148,150,152,153,154,155};
+	// int bad_dutt[] = {};
+// 	int bad_dutb[] = {};
+// 	int bad_fixt[] = {144,147,153};
+// 	int bad_fixb[] = {134,143,144,145,146,147,148,150,152,153,154,155};
 	
-	bad_strips[51001] = std::set(bad_dutt, bad_dutt + sizeof(bad_dutt)/sizeof(int));
-	bad_strips[51002] = std::set(bad_dutb, bad_dutb + sizeof(bad_dutb)/sizeof(int));
-	bad_strips[51011] = std::set(bad_fixt, bad_fixt + sizeof(bad_fixt)/sizeof(int));
-	bad_strips[51012] = std::set(bad_fixb, bad_fixb + sizeof(bad_fixb)/sizeof(int));
+	//read the file with bad strips
+	std::ifstram mask(bad_strip_file.c_str());
+	if (!setting) std::cout << "No bad strip file " << bad_strip_file << " found, continuing wihtout!" << std::endl;
+	while(!mask.eof())
+	{
+		std::string line;
+		std::getline(mask, line);
+		std::istream_iterator<int> start(line), end;
+		int module = *start;
+		std::set<int> bad_strip_set(start+1, end);
+		bad_strips[module] = bad_strip_set;
+	}
 }
 
 
@@ -136,11 +137,14 @@ void
 StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 	using namespace edm;
+    using namespace std;
    
     // use auto ptr to DetSetVector<Phase2TrackerCluster1D> to avoid memory leak
     auto_ptr< edm::DetSetVector<Phase2TrackerCluster1D> > Cluster_dsv( new edm::DetSetVector<Phase2TrackerCluster1D>);
     auto_ptr< edm::DetSetVector<Phase2TrackerStub> > Stub_dsv( new edm::DetSetVector<Phase2TrackerStub>);
-    
+    // edm::DetSetVector<Phase2TrackerCluster1D>*  Cluster_dsv = new edm::DetSetVector<Phase2TrackerCluster1D>;
+// 	edm::DetSetVector<Phase2TrackerStub>*  Stub_dsv = new edm::DetSetVector<Phase2TrackerStub>;
+	
     // handles for already existing input edm collections
     edm::Handle<edm::DetSetVector<PixelDigi> >  cbcDigis_;
     edm::Handle<edm::DetSet<SiStripCommissioningDigi> >  cbcCommissioningEvent_;
@@ -161,7 +165,7 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		for(; DSiter != DSViter->data.end(); DSiter++) //loop over all hits on subdet
 		{
 			
-			if (if (DSiter->adc() > 250 && bad_strips[detit].find(DSiter->row()) == bad_strips[detid].end())// hit is not in bad strips
+			if (DSiter->adc() > 250 && bad_strips[detid].find(DSiter->row()) == bad_strips[detid].end())// hit is not in bad strips
 			{
 				// if adjacent to last, increment size, else write object and reset
 				if (DSiter->row() == last_strip+1) clustersize += 1.;
@@ -182,17 +186,14 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		
 	} // loop over input DSV
 	
-	// sort cluster DSV 
-	Cluster_dsv->sort();
-	
 	// write to EDM, this is just a try
 	iEvent.put( Cluster_dsv, "Clusters" );
 	
 	// run stub finding here!
 	// 2 DSV iterators, loop over ds in dsv as 1st iterator, 2nd iterator does a find in DSV and looks for detid that is exactly 1 larger from first det id. i stop this when i have finished DSV->size/2 times
 
-	DetSetVector< edm::DetSetVector<Phase2TrackerCluster1D> >::const_iterator first_it = Cluster_dsv->begin();
-	DetSetVector< edm::DetSetVector<Phase2TrackerCluster1D> >::const_iterator second_it = Cluster_dsv->begin();
+	DetSetVector<Phase2TrackerCluster1D>::const_iterator first_it = Cluster_dsv->begin();
+	DetSetVector<Phase2TrackerCluster1D>::const_iterator second_it = Cluster_dsv->begin();
 	
 	unsigned int sensors = Cluster_dsv->size();
 	unsigned int module_counter = 0;
@@ -208,7 +209,7 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		
 		//FIXME 
 		
-		second_it = Cluster_dsv.find(second_id);
+		second_it = Cluster_dsv->find(second_id);
 		
 		if (second_it != Cluster_dsv->end()) // actually found matching sensor with det_id+1
 		{
@@ -224,10 +225,10 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				for(; second_cluster_it != second_it->data.end(); second_cluster_it++)
 				{
 					//compare clusters and create stub
-					if ( fabs ( second_cluster_it.center() - first_cluster_it.center() ) <= stub_windowsize )
+					if ( fabs ( second_cluster_it->center() - first_cluster_it->center() ) <= stub_windowsize )
 					{
-						stub_ds.push_back(Phase2TrackerStub(second_cluster_it.center(),first_cluster_it.center() - second_cluster_it.center(), 0));
-						//the convention is that channel comes from the bottom sensor, bx offset is 0 in case of a parallel test beam
+						stub_ds.push_back(Phase2TrackerStub(static_cast<unsigned int>(second_cluster_it->center()), static_cast<unsigned int>(1), static_cast<unsigned int>(fabs(first_cluster_it->center() - second_cluster_it->center())), static_cast<unsigned int>(0)));
+						//the convention is that channel comes from the bottom sensor, edge is 1 in BT, bx offset is 0 in case of a parallel test beam
 					}
 				}
 			}
@@ -245,17 +246,16 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		if(module_counter == sensors/2) break; //as soon as I have matched sensor/2 modules quit, because I am done!
 	}
 	
-   	n_events++;
-	
 	// and save the vectors
 	// syntax: object, "produces(name)"
 	// iEvent.put( Cluster_dsv, "Clusters" );
 	iEvent.put( Stub_dsv, "Stubs" );
+   	n_events++;
 }
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
-StubFinder::beginJob()
+StubFinder::beginJob(const edm::EventSetup&)
 {
 	//eventually book some histos and write to file....
 }
