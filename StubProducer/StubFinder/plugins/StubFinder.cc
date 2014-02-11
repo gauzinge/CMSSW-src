@@ -79,13 +79,13 @@ class StubFinder : public edm::EDProducer {
       static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 	  
 	  // Histograms
-	  std::map<int, TH1D*> n_clusters;
-	  std::map<int, TH1D*> clu_size;
-	  std::map<int, TH1D*> clu_center_pos;
+	  std::map<int, TH1D*> h_n_clusters;
+	  std::map<int, TH1D*> h_clu_size;
+	  std::map<int, TH1D*> h_clu_center_pos;
 	  
-	  std::map<int, TH1D*> n_stubs;
-	  std::map<int, TH1D*> stub_bend;
-	  std::map<int, TH1D*> stub_center_pos;
+	  std::map<int, TH1D*> h_n_stubs;
+	  std::map<int, TH1D*> h_stub_bend;
+	  std::map<int, TH1D*> h_stub_center_pos;
 	  	  
    private:
       virtual void beginJob();
@@ -94,7 +94,9 @@ class StubFinder : public edm::EDProducer {
 	  
 	  void read_bad_strips(std::string);
       int getDigit(int number, int pos);
-	  	  
+	  
+	  // Data source
+      edm::InputTag src_; 
 	  //input parameter: windowsize
 	  int stub_windowsize;
 	  //input parameter: bad strip file
@@ -112,6 +114,7 @@ class StubFinder : public edm::EDProducer {
 StubFinder::StubFinder(const edm::ParameterSet& iConfig)
 {
 	//read input parameters!
+    src_  = iConfig.getParameter<edm::InputTag>( "src" ); 
 	stub_windowsize = iConfig.getParameter<int>( "stub_windowsize" );
 	bad_strip_file = iConfig.getParameter<std::string>( "bad_strip_file" );
 	modules = iConfig.getUntrackedParameter< std::vector<unsigned int> >("modules");		
@@ -184,8 +187,8 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 					cluster_ds.push_back(mycluster);
 					
 					//Fill histos
-					clu_size[detid]->Fill(mycluster.size()+1);
-					clu_center_pos[detid]->Fill(mycluster.center());
+					h_clu_size[detid]->Fill(mycluster.size()+1);
+					h_clu_center_pos[detid]->Fill(mycluster.center());
 					
 					//reset
 					clustersize = 0;
@@ -198,7 +201,7 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		Cluster_dsv->insert(cluster_ds);	
 	
 		//fill histo
-		n_clusters[detid]->Fill(cluster_ds.size());
+		h_n_clusters[detid]->Fill(cluster_ds.size());
 		
 	} // loop over input DSV
 	
@@ -244,8 +247,8 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 							//the convention is that channel comes from the bottom sensor, edge is 1 in BT, bx offset is 0 in case of a parallel test beam
 							
 							//Fill histos
-							stub_bend[module_id]->Fill(mystub.triggerBend());
-							stub_center_pos[module_id]->Fill(mystub.barycenter().second);
+							h_stub_bend[module_id]->Fill(mystub.triggerBend());
+							h_stub_center_pos[module_id]->Fill(mystub.barycenter().second);
 						}
 					}
 				}
@@ -254,7 +257,7 @@ StubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 				Stub_dsv->insert(stub_ds);
 				
 				//Fill histo
-				n_stubs[module_id]->Fill(stub_ds.size());
+				h_n_stubs[module_id]->Fill(stub_ds.size());
 				
 			}
 		}
@@ -289,9 +292,9 @@ StubFinder::beginJob()
 		std::stringstream sensor_id;
 		sensor_id << *sen_it;
 		
-		n_clusters[*sen_it] = fs->make<TH1D>("n_clusters_"+*sensor_id.str().c_str(),"n_clusters_"+*sensor_id.str().c_str(),256,0,256);
-		clu_size[*sen_it] = fs->make<TH1D>("clu_size_"+*sensor_id.str().c_str(),"clu_size_"+*sensor_id.str().c_str(),10,0,10);
-		clu_center_pos[*sen_it] = fs->make<TH1D>("clu_pos_"+*sensor_id.str().c_str(),"clu_pos_"+*sensor_id.str().c_str(),256,0,256);
+		h_n_clusters[*sen_it] = fs->make<TH1D>("n_clusters_"+*sensor_id.str().c_str(),"n_clusters_"+*sensor_id.str().c_str(),256,0,256);
+		h_clu_size[*sen_it] = fs->make<TH1D>("clu_size_"+*sensor_id.str().c_str(),"clu_size_"+*sensor_id.str().c_str(),10,0,10);
+		h_clu_center_pos[*sen_it] = fs->make<TH1D>("clu_pos_"+*sensor_id.str().c_str(),"clu_pos_"+*sensor_id.str().c_str(),256,0,256);
 	}
 	
 	for (std::vector<unsigned int>::iterator mod_it = modules.begin(); mod_it != modules.end(); mod_it++)
@@ -299,9 +302,9 @@ StubFinder::beginJob()
 		std::stringstream module_id;
 		module_id << *mod_it;
 		
-		n_stubs[*mod_it] = fs->make<TH1D>("n_stubs_"+*module_id.str().c_str(),"n_clusters_"+*module_id.str().c_str(),256,0,256);
-		stub_bend[*mod_it] = fs->make<TH1D>("stub_bend_"+*module_id.str().c_str(),"stub_bend_"+*module_id.str().c_str(),10,0,10);
-		stub_center_pos[*mod_it] = fs->make<TH1D>("stub_pos_"+*module_id.str().c_str(),"stub_pos_"+*module_id.str().c_str(),256,0,256);
+		h_n_stubs[*mod_it] = fs->make<TH1D>("n_stubs_"+*module_id.str().c_str(),"n_clusters_"+*module_id.str().c_str(),256,0,256);
+		h_stub_bend[*mod_it] = fs->make<TH1D>("stub_bend_"+*module_id.str().c_str(),"stub_bend_"+*module_id.str().c_str(),10,0,10);
+		h_stub_center_pos[*mod_it] = fs->make<TH1D>("stub_pos_"+*module_id.str().c_str(),"stub_pos_"+*module_id.str().c_str(),256,0,256);
 	}
 }
 
