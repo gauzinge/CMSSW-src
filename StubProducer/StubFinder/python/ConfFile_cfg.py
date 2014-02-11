@@ -18,6 +18,8 @@ process.StubFinder = cms.EDProducer('StubFinder',
          stub_windowsize = cms.vint32(7),
 		 # self-explanatory
          bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt"),
+		 modules = cms.vuint32(50000, 50010),
+		 sensors = cms.vuint32(50001, 50002, 50011, 50012),
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
