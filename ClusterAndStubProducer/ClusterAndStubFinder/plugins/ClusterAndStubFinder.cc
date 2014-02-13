@@ -83,6 +83,8 @@ class ClusterAndStubFinder : public edm::EDProducer {
       virtual void produce(edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
 	  
+	  void read_bad_strips(std::string);
+	  bool strip_masked(unsigned int detid, int strip);
       int getDigit(int number, int pos);
 	  
 	  //input parameter: windowsize
@@ -90,6 +92,7 @@ class ClusterAndStubFinder : public edm::EDProducer {
 	  //input parameter: bad strip file
 	  std::string bad_strip_file;
 	  
+	  std::map<int, std::set<int> > bad_strips;
 	  int n_events;				
 };
 
@@ -98,6 +101,7 @@ ClusterAndStubFinder::ClusterAndStubFinder(const edm::ParameterSet& iConfig)
 {
 	//read input parameters!
 	stub_windowsize = iConfig.getParameter<unsigned int>( "stub_windowsize" );
+	bad_strip_file = iConfig.getParameter<std::string>( "bad_strip_file" );
 			
     produces< edm::DetSetVector<Phase2TrackerCluster1D> >("Clusters"); //.setBranchAlias("Cluster_branch"); 
     produces< edm::DetSetVector<Phase2TrackerStub> >("Stubs"); //.setBranchAlias("Stub_branch");
@@ -110,6 +114,7 @@ ClusterAndStubFinder::ClusterAndStubFinder(const edm::ParameterSet& iConfig)
 // 	int bad_fixb[] = {134,143,144,145,146,147,148,150,152,153,154,155};
 	
 	//read the file with bad strips
+	read_bad_strips(bad_strip_file);
 }
 
 
@@ -154,7 +159,7 @@ ClusterAndStubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 		DetSet<PixelDigi>::const_iterator DSiter = DSViter->data.begin();
 		for(; DSiter != DSViter->data.end(); DSiter++) //loop over all hits on subdet
 		{
-			if (DSiter->adc() > 250)// sanity check
+			if (DSiter->adc() > 250 && !strip_masked(detid,DSiter->row()))// sanity check && not masked strip
 			{
 				// if 1st iteration, set first strip
 				if (DSiter == DSViter->data.begin()) first_strip = DSiter->row();
@@ -298,6 +303,50 @@ ClusterAndStubFinder::fillDescriptions(edm::ConfigurationDescriptions& descripti
   // descriptions.addDefault(desc);
 }
 
+void
+ClusterAndStubFinder::read_bad_strips(std::string bad_strip_file)
+{
+	//read the file with bad strips
+	std::ifstream mask(bad_strip_file.c_str());
+	if (!mask) std::cout << "No bad strip file " << bad_strip_file << " found, continuing wihtout!" << std::endl;
+	while(!mask.eof())
+	{
+		std::string line;
+		std::getline(mask, line);
+		std::stringstream linestream(line);
+		std::istream_iterator<int> begin(linestream), eos;
+		int module;
+		if (begin == eos) 
+		{
+			module = *begin;
+			std::set<int> bad_strip_set;
+			this->bad_strips[module] = bad_strip_set;
+		}
+		else
+		{
+			module = *begin;
+			begin++;
+			std::set<int> bad_strip_set (begin, eos);
+			this->bad_strips[module] = bad_strip_set;
+		}
+	}
+	
+	for (std::map< int, std::set<int> >::iterator map_it = this->bad_strips.begin(); map_it != this->bad_strips.end(); map_it++)
+	{
+		std::cout << "Reading bad strips for Module " << map_it->first << " : ";
+		for (std::set<int>::iterator it = map_it->second.begin(); it != map_it->second.end(); it++)
+		{
+			std::cout << *it << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+bool ClusterAndStubFinder::strip_masked(unsigned int detid, int strip)
+{
+	if (this->bad_strips[detid].find(strip) != this->bad_strips[detid].end()) return true;
+	else return false;
+}
 
 int ClusterAndStubFinder::getDigit(int number, int pos)
 {

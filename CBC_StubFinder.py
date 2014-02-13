@@ -43,7 +43,8 @@ process.source = cms.Source("PoolSource",
 # Stub Producer
 process.stubfinder = cms.EDProducer('ClusterAndStubFinder',
          # Stub windowsize is the width of the search window to look for correlated hits. 
-         stub_windowsize = cms.uint32(7)
+         stub_windowsize = cms.uint32(7),
+		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
 )
 
 # Output module for Stub Finder output
