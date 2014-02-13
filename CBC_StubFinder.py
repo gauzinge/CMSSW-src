@@ -6,24 +6,23 @@ import re
 if len(sys.argv) != 3:
 	print 'Wrong number of Command line arguments. Usage: cmsRun', sys.argv[1], 'datafile!\n\n' 
 
-# runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
-runnumber = re.findall("run(\d+)",sys.argv[2])
+runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
 datafile = 'file:'+sys.argv[2]
-histofile = '/afs/cern.ch/user/g/gauzinge/tb_results/run' + runnumber[0] + '_analysis.root'
+outfile = '/afs/cern.ch/user/g/gauzinge/tb_data/run' + runnumber[0] + '_clusters.root'
 
 print '\nThe runnumber is ',runnumber[0]
 print '\nThe File to be read is ',datafile 
-print '\nThe histograms are written to ', histofile
+print '\nThe clusters and stubs are written to ', outfile
 print '\n\n'
 
 #set up a process , for e.g. Low Level Analysis in this case
-process = cms.Process("CBCAnalysis")
+process = cms.Process("ClusterAndStubFinding")
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = 10000
 process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.categories.append('CBC_Analysis')
+process.MessageLogger.categories.append('ClusterAndStubFinding')
 process.MessageLogger.cerr.INFO = cms.untracked.PSet(
     limit = cms.untracked.int32(-1)
 )
@@ -40,18 +39,18 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-#TfileService for Histograms
-process.TFileService = cms.Service("TFileService",
-    fileName = cms.string(histofile)
+
+# Stub Producer
+process.stubfinder = cms.EDProducer('ClusterAndStubFinder',
+         # Stub windowsize is the width of the search window to look for correlated hits. 
+         stub_windowsize = cms.uint32(7)
 )
 
-# Conditions Data Decoder
-process.conditions = cms.EDAnalyzer('ConditionDecoder')
-
-# Low Level Analysis
-process.lowlevel = cms.EDAnalyzer('LL_Analysis',
-		 sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
+# Output module for Stub Finder output
+process.out = cms.OutputModule("PoolOutputModule",
+    fileName = cms.untracked.string(outfile)
 )
 
 # process.mypath = cms.Path(process.conditions*process.lowlevel)
-process.mypath = cms.Path(process.conditions*process.lowlevel)
+process.mypath = cms.Path(process.stubfinder)
+process.e = cms.EndPath(process.out)

@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process("OWNPARTICLES")
+process = cms.Process("CLUANDSTUBRECO")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
@@ -9,21 +9,22 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.source = cms.Source("PoolSource",
     # replace 'myfile.root' with the source file you want to use
     fileNames = cms.untracked.vstring(
-        'file:myfile.root'
+        'file:/afs/cern.ch/user/g/gauzinge/tb_data/USC.00000487.0001.A.storageManager.00.0000.root'
     )
 )
 
-process.StubFinder = cms.EDProducer('StubFinder',
+process.StubFinder = cms.EDProducer('ClusterAndStubFinder',
          # Stub windowsize is the width of the search window to look for correlated hits. 
-         stub_windowsize = cms.vint32(7),
-		 # self-explanatory
-         bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt"),
-		 modules = cms.vuint32(50000, 50010),
-		 sensors = cms.vuint32(50001, 50002, 50011, 50012),
+         stub_windowsize = cms.uint32(7)
+)
+
+#TfileService for Histograms
+process.TFileService = cms.Service("TFileService",
+    fileName = cms.string("/afs/cern.ch/user/g/gauzinge/tb_results/myHistoFile.root")
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-    fileName = cms.untracked.string('myOutputFile.root')
+    fileName = cms.untracked.string('file:/afs/cern.ch/user/g/gauzinge/tb_data/run487_clusters.root')
 )
 
   

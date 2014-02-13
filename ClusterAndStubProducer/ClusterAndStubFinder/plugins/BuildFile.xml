@@ -7,7 +7,7 @@
 <use name="DataFormats/Phase2TrackerStub"/>
 <use name="DataFormats/Phase2TrackerCluster1D"/>
 <use name="CommonTools/UtilAlgos"/>
-<use name="FWCore/ServiceRegistry"/> # GF: Not sure whether really needed...
+<use name="FWCore/ServiceRegistry"/>
 <use name="DataFormats/Common"/>
 <use name="boost"/>
 <use name="rootrflx"/>

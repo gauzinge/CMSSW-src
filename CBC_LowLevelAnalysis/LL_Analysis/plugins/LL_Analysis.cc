@@ -69,24 +69,24 @@ class LL_Analysis : public edm::EDAnalyzer {
 	  
 	  //Total number of Hits
 	  std::map<unsigned int, TH1D*> h_hits;
-      TH1D * h_hits_DUT_t;
-      TH1D * h_hits_DUT_b;
-      TH1D * h_hits_FIX_t;
-      TH1D * h_hits_FIX_b;
+      // TH1D * h_hits_DUT_t;
+ //      TH1D * h_hits_DUT_b;
+ //      TH1D * h_hits_FIX_t;
+ //      TH1D * h_hits_FIX_b;
 	  
 	  //TDC for every hit, by sensor
 	  std::map<unsigned int, TH1D*> h_tdc;
-      TH1D * h_tdc_dt;
-      TH1D * h_tdc_db;
-      TH1D * h_tdc_ft;
-      TH1D * h_tdc_fb;
+      // TH1D * h_tdc_dt;
+ //      TH1D * h_tdc_db;
+ //      TH1D * h_tdc_ft;
+ //      TH1D * h_tdc_fb;
 	  
 	  //1 or 0 depending if hit or not
 	  std::map<unsigned int, TH1D*> h_tot;
-      TH1D * h_tot_dut_t;
-      TH1D * h_tot_dut_b;
-      TH1D * h_tot_fix_t;
-      TH1D * h_tot_fix_b;     
+      // TH1D * h_tot_dut_t;
+  //     TH1D * h_tot_dut_b;
+  //     TH1D * h_tot_fix_t;
+  //     TH1D * h_tot_fix_b;     
 	  
 	  //Hit Distribution
 	  // std::map<unsigned int, TH1D*> h_n_hits_A;
@@ -124,22 +124,23 @@ LL_Analysis::~LL_Analysis()
 // ------------ method called for each event  ------------
 void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
+	
 	using namespace edm;
 
   // helpers
   std::map<unsigned int, std::vector<int> > hits; 
-  // std::map<unsigned int, int> n_hits; 
-  int nhits_dut_A = 0, nhits_dut_B = 0, nhits_fix_A = 0, nhits_fix_B = 0;
+  int nhits_dut_A = 0;
+  int nhits_dut_B = 0;
+  int nhits_fix_A = 0;
+  int nhits_fix_B = 0;  
   
 	for (std::vector<unsigned int>::iterator sen_it = sensors.begin(); sen_it != sensors.end(); sen_it++)
-	{
-		std::stringstream sensor_id;
-		sensor_id << *sen_it;
-		// n_hits[*sen_it] = 0;
+	{	
+		std::vector<int> dummy;
+		hits[*sen_it] = dummy;
 	}
    
 	int tdc = 0;
-	
 	// | INFCBCB | INFCBCA | CNMCBCB | CNMCBCA
 	
 	//access conditions data for tdc phase of event
@@ -154,23 +155,27 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 			(value == 12) ? tdc = 0 : tdc = value - 4; // if not 12 -> value - 4
 		}
 	}
-   
+	
 	//access Digis 
 	iEvent.getByLabel("SiStripDigitestproducer", "ProcessedRaw", cbcDigis_);
    
 	DetSetVector<PixelDigi>::const_iterator DSViter = cbcDigis_->begin();
+	
 	for (; DSViter!=cbcDigis_->end(); DSViter++) //module loop
 	{
+		unsigned int detid = static_cast<unsigned int>(DSViter->id);
+
 		DetSet<PixelDigi>::const_iterator DSiter = DSViter->data.begin();
+		
 		for(; DSiter != DSViter->data.end(); DSiter++) // hit loop
 		{
-			unsigned int detid = DSViter->id;
 			int adc = DSiter->adc();
   		   
 			if (adc > 250)
 			{
-				h_hits[detid]->Fill(DSiter->row());
-  			   
+				// h_hits[detid]->Fill(DSiter->row());
+				//FIXME 
+				   	
 				//Fill hit strips in vector per sensor
   	  		    hits[detid].push_back(DSiter->row());
 				
@@ -220,10 +225,13 @@ LL_Analysis::beginJob()
 		sensor_id << *sen_it;
   	//Total number of Hits
 		h_hits[*sen_it] = fs->make<TH1D>("h_hits_"+*sensor_id.str().c_str(),"Hits "+*sensor_id.str().c_str(),256,0.,256.);
+
 	//Hit or no hit per sensor
 		h_tot[*sen_it] = fs->make<TH1D>("h_tot_"+*sensor_id.str().c_str(),"Hits "+*sensor_id.str().c_str(),2,0.,2.);
+		
 	//TDC for every hit on every sensor  
 	    h_tdc[*sen_it] = fs->make<TH1D>("h_tdc_"+*sensor_id.str().c_str(),"TDC "+*sensor_id.str().c_str(),10,0.,10.);
+		
 	  	//Hit Distribution
 	  	// h_n_hits[*sen_id] = fs->make<TH1D>("h_n_hits_"+*sensor_id.str().c_str(),"Number of Hits DUT chip A", 256,0.,256.);
 	}
