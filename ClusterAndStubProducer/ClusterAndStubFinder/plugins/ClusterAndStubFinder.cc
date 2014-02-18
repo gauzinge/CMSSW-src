@@ -54,9 +54,6 @@
 #include "DataFormats/Phase2TrackerCluster1D/interface/Phase2TrackerCluster1D.h"
 #include "DataFormats/Phase2TrackerStub/interface/Phase2TrackerStub.h"
 
-// Root includes
-#include "TH1D.h"
-
 // STL includes
 #include <vector>
 #include <iostream>
@@ -68,8 +65,7 @@
 // class declaration
 //
 
-// FIXME
-// I am lacking all sorts of histograms
+
 
 class ClusterAndStubFinder : public edm::EDProducer {
    public:
@@ -230,10 +226,14 @@ ClusterAndStubFinder::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 					
 					for(; second_cluster_it != second_it->data.end(); second_cluster_it++)
 					{
+						int top_center = floor(first_cluster_it->center());
+						int bot_center = floor(second_cluster_it->center());
+						unsigned int bend = static_cast<unsigned int> (fabs ( bot_center - top_center ));
+						
 						//compare clusters and create stub
-						if ( fabs ( second_cluster_it->center() - first_cluster_it->center() ) <= stub_windowsize )
+						if ( bend <= stub_windowsize )
 						{
-							Phase2TrackerStub mystub(static_cast<unsigned int>(second_cluster_it->center()), static_cast<unsigned int>(1), static_cast<unsigned int>(fabs(first_cluster_it->center() - second_cluster_it->center())), static_cast<unsigned int>(0));
+							Phase2TrackerStub mystub(static_cast<unsigned int> (bot_center) * 2, 1, bend, 0);
 							
 							stub_ds.push_back(mystub);
 							//the convention is that channel comes from the bottom sensor, edge is 1 in BT, bx offset is 0 in case of a parallel test beam

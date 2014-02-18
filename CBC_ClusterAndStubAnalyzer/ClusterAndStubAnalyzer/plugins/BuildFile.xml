@@ -1,0 +1,16 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="PhysicsTools/Utilities"/>
+<use name="DataFormats/SiPixelDigi"/>
+<use name="DataFormats/Phase2TrackerDigi"/>
+<use name="DataFormats/Phase2TrackerStub"/>
+<use name="DataFormats/Phase2TrackerCluster1D"/>
+<use name="CommonTools/UtilAlgos"/>
+<use name="FWCore/ServiceRegistry"/>
+<use name="DataFormats/Common"/>
+<use name="boost"/>
+<use name="rootrflx"/>
+<use name="root"/>
+<flags EDM_PLUGIN="1"/>
+

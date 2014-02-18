@@ -50,8 +50,13 @@ process.conditions = cms.EDAnalyzer('ConditionDecoder')
 
 # Low Level Analysis
 process.lowlevel = cms.EDAnalyzer('LL_Analysis',
-		 sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
+		 sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012)
+)
+
+process.stubs = cms.EDAnalyzer('ClusterAndStubAnalyzer',
+	sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
+	modules = cms.untracked.vuint32(50000, 50010)
 )
 
 # process.mypath = cms.Path(process.conditions*process.lowlevel)
-process.mypath = cms.Path(process.conditions*process.lowlevel)
+process.mypath = cms.Path(process.conditions*process.lowlevel*process.stubs)
