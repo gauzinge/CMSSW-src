@@ -79,10 +79,14 @@ class LL_Analysis : public edm::EDAnalyzer {
       TH1D * h_tot_fix_b;     
 
 	  //Hit Distribution
-	  TH1D * h_n_hits_dut_A;
-	  TH1D * h_n_hits_dut_B;
-	  TH1D * h_n_hits_fix_A;
-	  TH1D * h_n_hits_fix_B;
+	  TH1D * h_n_hits_dut_t_A;
+	  TH1D * h_n_hits_dut_b_A;
+	  TH1D * h_n_hits_dut_t_B;
+	  TH1D * h_n_hits_dut_b_B;
+	  TH1D * h_n_hits_fix_t_A;
+	  TH1D * h_n_hits_fix_b_A;
+	  TH1D * h_n_hits_fix_t_B;
+	  TH1D * h_n_hits_fix_b_B;
 
       int n_events;
 
@@ -123,10 +127,15 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	std::vector<int> hits_ft;
 	std::vector<int> hits_fb;
    
-	int nhits_dut_A = 0;
-	int nhits_dut_B = 0;
-	int nhits_fix_A = 0;
-	int nhits_fix_B = 0;
+	int nhits_dut_t_A = 0;
+	int nhits_dut_b_A = 0;
+	int nhits_dut_t_B = 0;
+	int nhits_dut_b_B = 0;
+	
+	int nhits_fix_t_A = 0;
+	int nhits_fix_b_A = 0;
+	int nhits_fix_t_B = 0;
+	int nhits_fix_b_B = 0;
    
 	int tdc = 0;
 
@@ -162,35 +171,54 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 				//Fill strip number of every hit in Histo - > Beam Profile
 				switch (detid)
 				{
-					case 51001: h_hits_DUT_t->Fill(DSiter->row()); break; //CNM top
-					case 51002: h_hits_DUT_b->Fill(DSiter->row()); break; //CNM bottom
-					case 51011: h_hits_FIX_t->Fill(DSiter->row()); break; //Infineon top
-					case 51012: h_hits_FIX_b->Fill(DSiter->row()); break; //Infineon bottom
+					case 51001: 
+					{
+						h_hits_DUT_t->Fill(DSiter->row());
+						hits_dt.push_back(DSiter->row());
+						if (DSiter->row() < 127) nhits_dut_t_A++;
+						else if (DSiter->row() >= 127) nhits_dut_t_B++;
+						// break; //CNM top
+					}
+					case 51002: 
+					{
+						h_hits_DUT_b->Fill(DSiter->row());
+						hits_db.push_back(DSiter->row());
+						if (DSiter->row() < 127) nhits_dut_b_A++;
+						else if (DSiter->row() >= 127) nhits_dut_b_B++;
+						// break; //CNM bottom
+					}
+					case 51011: 
+					{
+						h_hits_FIX_t->Fill(DSiter->row()); 
+						hits_ft.push_back(DSiter->row());
+						if (DSiter->row() < 127) nhits_fix_t_A++;
+						else if (DSiter->row() >= 127) nhits_fix_t_B++;
+						// break; //Infineon top
+					}
+					case 51012: 
+					{
+						h_hits_FIX_b->Fill(DSiter->row()); 
+						hits_fb.push_back(DSiter->row());
+						if (DSiter->row() < 127) nhits_fix_b_A++;
+						else if (DSiter->row() >= 127) nhits_fix_b_B++;
+						// break; //Infineon bottom
+					}
 				}
   			   
-				//Fill hit strips in vector per sensor
-				if (detid == 51001) hits_dt.push_back(DSiter->row());
-				if (detid == 51002) hits_db.push_back(DSiter->row());
-				if (detid == 51011) hits_ft.push_back(DSiter->row());
-				if (detid == 51012) hits_fb.push_back(DSiter->row());
-  	  
-				//Fill hit strips in vector per module / chip
-				//DUT Chips A & B
-				if ((detid == 51001 || detid == 51002) && DSiter->row() < 127) nhits_dut_A++;
-				if ((detid == 51001 || detid == 51002) && DSiter->row() >= 127) nhits_dut_B++;
-   
-				//FIX Chips A & B
-				if ((detid == 51011 || detid == 51012) && DSiter->row() < 127) nhits_fix_A++;
-				if ((detid == 51011 || detid == 51012) && DSiter->row() >= 127) nhits_fix_B++;
 			}
 		} //End of hit loop
 	} //End of module loop
    		 
 	//Number of hits per chip for CM Noise
-	h_n_hits_dut_A->Fill(nhits_dut_A);
-	h_n_hits_dut_B->Fill(nhits_dut_B);
-	h_n_hits_fix_A->Fill(nhits_fix_A);
-	h_n_hits_fix_B->Fill(nhits_fix_B);
+	h_n_hits_dut_t_A->Fill(nhits_dut_t_A);
+	h_n_hits_dut_b_A->Fill(nhits_dut_b_A);
+	h_n_hits_dut_t_B->Fill(nhits_dut_t_B);
+	h_n_hits_dut_b_B->Fill(nhits_dut_b_B);
+	
+	h_n_hits_fix_t_A->Fill(nhits_fix_t_A);
+	h_n_hits_fix_b_A->Fill(nhits_fix_b_A);
+	h_n_hits_fix_t_B->Fill(nhits_fix_t_B);
+	h_n_hits_fix_b_B->Fill(nhits_fix_b_B);
       	 	 
 	//Hit or no Hit
 	h_tot_dut_t->Fill((hits_dt.size()) ? 1 : 0);
@@ -204,7 +232,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     if (hits_ft.size()) h_tdc_ft->Fill(tdc);
     if (hits_fb.size()) h_tdc_fb->Fill(tdc);
    
-	LogDebug ("") << "hits dut A " << nhits_dut_A << " hits dut B " << nhits_dut_B << " hits fix A " << nhits_fix_A << " hits fix B " << nhits_fix_B ;
+	// LogDebug ("") << "hits dut A " << nhits_dut_A << " hits dut B " << nhits_dut_B << " hits fix A " << nhits_fix_A << " hits fix B " << nhits_fix_B ;
    
 	n_events++;
 }
@@ -237,10 +265,15 @@ LL_Analysis::beginJob()
     h_tdc_fb = fs->make<TH1D>("h_tdc_fb","fix bottom",10,0.,10.);
 
   	//Hit Distribution
-  	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 256,0.,256.);
-  	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 256,0.,256.);
-  	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 256,0.,256.);
-  	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 256,0.,256.);
+  	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 127,0.,127.);
+  	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 127,0.,127.);
+  	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 127,0.,127.);
+  	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 127,0.,127.);
+	
+  	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 127,0.,127.);
+  	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,0.,127.);
+  	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,0.,127.);
+  	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 127,0.,127.);
 }
 
 
