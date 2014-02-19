@@ -160,10 +160,11 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	DetSetVector<PixelDigi>::const_iterator DSViter = cbcDigis_->begin();
 	for (; DSViter!=cbcDigis_->end(); DSViter++) //module loop
 	{
+		int detid = DSViter->id;
+		
 		DetSet<PixelDigi>::const_iterator DSiter = DSViter->data.begin();
 		for(; DSiter != DSViter->data.end(); DSiter++) // hit loop
 		{
-			int detid = DSViter->id;
 			int adc = DSiter->adc();
   		   
 			if (adc > 250)
@@ -177,7 +178,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 						hits_dt.push_back(DSiter->row());
 						if (DSiter->row() < 127) nhits_dut_t_A++;
 						else if (DSiter->row() >= 127) nhits_dut_t_B++;
-						// break; //CNM top
+						break; //CNM top
 					}
 					case 51002: 
 					{
@@ -185,7 +186,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 						hits_db.push_back(DSiter->row());
 						if (DSiter->row() < 127) nhits_dut_b_A++;
 						else if (DSiter->row() >= 127) nhits_dut_b_B++;
-						// break; //CNM bottom
+						break; //CNM bottom
 					}
 					case 51011: 
 					{
@@ -193,7 +194,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 						hits_ft.push_back(DSiter->row());
 						if (DSiter->row() < 127) nhits_fix_t_A++;
 						else if (DSiter->row() >= 127) nhits_fix_t_B++;
-						// break; //Infineon top
+						break; //Infineon top
 					}
 					case 51012: 
 					{
@@ -201,7 +202,6 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 						hits_fb.push_back(DSiter->row());
 						if (DSiter->row() < 127) nhits_fix_b_A++;
 						else if (DSiter->row() >= 127) nhits_fix_b_B++;
-						// break; //Infineon bottom
 					}
 				}
   			   
@@ -269,7 +269,7 @@ LL_Analysis::beginJob()
   	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 127,0.,127.);
   	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 127,0.,127.);
   	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 127,0.,127.);
-	
+
   	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 127,0.,127.);
   	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,0.,127.);
   	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,0.,127.);

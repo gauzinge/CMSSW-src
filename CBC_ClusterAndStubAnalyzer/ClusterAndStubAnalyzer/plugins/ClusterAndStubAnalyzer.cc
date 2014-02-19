@@ -156,10 +156,10 @@ void
 		unsigned int detid = cluster_dsv->id;
 		switch(detid)
 		{
-			case 51001: h_n_clusters_DUT_T->Fill(cluster_dsv->data.size());
-			case 51002: h_n_clusters_DUT_B->Fill(cluster_dsv->data.size());
-			case 51011: h_n_clusters_FIX_T->Fill(cluster_dsv->data.size());
-			case 51012: h_n_clusters_FIX_B->Fill(cluster_dsv->data.size());
+			case 51001: h_n_clusters_DUT_T->Fill(cluster_dsv->data.size()); break;
+			case 51002: h_n_clusters_DUT_B->Fill(cluster_dsv->data.size()); break;
+			case 51011: h_n_clusters_FIX_T->Fill(cluster_dsv->data.size()); break;
+			case 51012: h_n_clusters_FIX_B->Fill(cluster_dsv->data.size()); break;
 			
 		}
 		DetSet<Phase2TrackerCluster1D>::const_iterator cluster_ds = cluster_dsv->data.begin();
@@ -169,10 +169,10 @@ void
 			// std::cout << detid << cluster_ds->size() << " " << cluster_ds->center() << " " << cluster_dsv->data.size()<<std::endl;
 			switch(detid)
 			{                                                                                                             
-				case 51001: h_clu_size_DUT_T->Fill(cluster_ds->size()+1); h_clu_center_DUT_T->Fill(cluster_ds->center());
-				case 51002: h_clu_size_DUT_B->Fill(cluster_ds->size()+1); h_clu_center_DUT_B->Fill(cluster_ds->center());
-				case 51011: h_clu_size_FIX_T->Fill(cluster_ds->size()+1); h_clu_center_FIX_T->Fill(cluster_ds->center());
-				case 51012: h_clu_size_FIX_B->Fill(cluster_ds->size()+1); h_clu_center_FIX_B->Fill(cluster_ds->center());
+				case 51001: h_clu_size_DUT_T->Fill(cluster_ds->size()+1); h_clu_center_DUT_T->Fill(cluster_ds->center()); break;
+				case 51002: h_clu_size_DUT_B->Fill(cluster_ds->size()+1); h_clu_center_DUT_B->Fill(cluster_ds->center()); break;
+				case 51011: h_clu_size_FIX_T->Fill(cluster_ds->size()+1); h_clu_center_FIX_T->Fill(cluster_ds->center()); break;
+				case 51012: h_clu_size_FIX_B->Fill(cluster_ds->size()+1); h_clu_center_FIX_B->Fill(cluster_ds->center()); break;
 			}
 			// h_clu_size[detid]->Fill(cluster_ds->size()+1);
 // 			h_clu_center[detid]->Fill(cluster_ds->center());
@@ -187,8 +187,8 @@ void
 		unsigned int detid = stub_dsv->id;
 		switch(detid)
 		{
-			case 51000: h_n_stubs_DUT->Fill(stub_dsv->data.size());
-			case 51010: h_n_stubs_FIX->Fill(stub_dsv->data.size());
+			case 51000: h_n_stubs_DUT->Fill(stub_dsv->data.size()); break;
+			case 51010: h_n_stubs_FIX->Fill(stub_dsv->data.size()); break;
 		}
 		DetSet<Phase2TrackerStub>::const_iterator stub_ds = stub_dsv->data.begin();
 	
@@ -197,8 +197,8 @@ void
 			// std::cout << stub_ds->triggerBend() << " " << stub_ds->barycenter().second << std::endl;
 			switch(detid)
 			{
-				case 51000: h_stub_bend_DUT->Fill(stub_ds->triggerBend()); h_stub_center_DUT->Fill(stub_ds->barycenter().second);
-				case 51010: h_stub_bend_FIX->Fill(stub_ds->triggerBend()); h_stub_center_FIX->Fill(stub_ds->barycenter().second);
+				case 51000: h_stub_bend_DUT->Fill(stub_ds->triggerBend()); h_stub_center_DUT->Fill(stub_ds->barycenter().second); break;
+				case 51010: h_stub_bend_FIX->Fill(stub_ds->triggerBend()); h_stub_center_FIX->Fill(stub_ds->barycenter().second); break;
 			}
 		}
 	}
