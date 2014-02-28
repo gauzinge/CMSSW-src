@@ -8,12 +8,15 @@ if len(sys.argv) != 3:
 
 runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
 datafile = 'file:'+sys.argv[2]
-outfile = '/afs/cern.ch/user/g/gauzinge/tb_data/run' + runnumber[0] + '_clusters.root'
+# outfile = '/afs/cern.ch/user/g/gauzinge/tb_data/clusters/run' + runnumber[0] + '_clusters.root'
+outfile = datafile.replace("USC.00000","run")
+outfile = outfile.replace(".0001.A.storageManager.00.0000","_clusters")
+outfile = outfile.replace("/digis/","/clusters/")
 
 print '\nThe runnumber is ',runnumber[0]
 print '\nThe File to be read is ',datafile 
 print '\nThe clusters and stubs are written to ', outfile
-print '\n\n'
+print '\n'
 
 #set up a process , for e.g. Low Level Analysis in this case
 process = cms.Process("ClusterAndStubFinding")

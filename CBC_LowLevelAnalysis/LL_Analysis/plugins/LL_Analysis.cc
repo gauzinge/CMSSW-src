@@ -78,7 +78,7 @@ class LL_Analysis : public edm::EDAnalyzer {
       TH1D * h_tot_fix_t;
       TH1D * h_tot_fix_b;     
 
-	  //Hit Distribution
+	  //Hit Distribution per Chip / Sensor
 	  TH1D * h_n_hits_dut_t_A;
 	  TH1D * h_n_hits_dut_b_A;
 	  TH1D * h_n_hits_dut_t_B;
@@ -87,7 +87,13 @@ class LL_Analysis : public edm::EDAnalyzer {
 	  TH1D * h_n_hits_fix_b_A;
 	  TH1D * h_n_hits_fix_t_B;
 	  TH1D * h_n_hits_fix_b_B;
-
+	  
+	  //Hit Distribution per Chip
+	  TH1D* h_n_hits_dut_A;
+	  TH1D* h_n_hits_dut_B;
+	  TH1D* h_n_hits_fix_A;
+	  TH1D* h_n_hits_fix_B;
+	  
       int n_events;
 
 
@@ -137,6 +143,11 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	int nhits_fix_t_B = 0;
 	int nhits_fix_b_B = 0;
    
+	int nhits_dut_A = 0;
+	int nhits_dut_B = 0;
+	int nhits_fix_A = 0;
+	int nhits_fix_B = 0;
+   
 	int tdc = 0;
 
 	// | INFCBCB | INFCBCA | CNMCBCB | CNMCBCA
@@ -176,32 +187,32 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_DUT_t->Fill(DSiter->row());
 						hits_dt.push_back(DSiter->row());
-						if (DSiter->row() < 127) nhits_dut_t_A++;
-						else if (DSiter->row() >= 127) nhits_dut_t_B++;
+						if (DSiter->row() < 127) nhits_dut_t_A++, nhits_dut_A++;
+						else if (DSiter->row() >= 127) nhits_dut_t_B++, nhits_dut_B++;
 						break; //CNM top
 					}
 					case 51002: 
 					{
 						h_hits_DUT_b->Fill(DSiter->row());
 						hits_db.push_back(DSiter->row());
-						if (DSiter->row() < 127) nhits_dut_b_A++;
-						else if (DSiter->row() >= 127) nhits_dut_b_B++;
+						if (DSiter->row() < 127) nhits_dut_b_A++, nhits_dut_A++;
+						else if (DSiter->row() >= 127) nhits_dut_b_B++, nhits_dut_B++;
 						break; //CNM bottom
 					}
 					case 51011: 
 					{
 						h_hits_FIX_t->Fill(DSiter->row()); 
 						hits_ft.push_back(DSiter->row());
-						if (DSiter->row() < 127) nhits_fix_t_A++;
-						else if (DSiter->row() >= 127) nhits_fix_t_B++;
+						if (DSiter->row() < 127) nhits_fix_t_A++, nhits_fix_A++;
+						else if (DSiter->row() >= 127) nhits_fix_t_B++, nhits_fix_B++;
 						break; //Infineon top
 					}
 					case 51012: 
 					{
 						h_hits_FIX_b->Fill(DSiter->row()); 
 						hits_fb.push_back(DSiter->row());
-						if (DSiter->row() < 127) nhits_fix_b_A++;
-						else if (DSiter->row() >= 127) nhits_fix_b_B++;
+						if (DSiter->row() < 127) nhits_fix_b_A++, nhits_fix_A++;
+						else if (DSiter->row() >= 127) nhits_fix_b_B++, nhits_fix_B++;
 					}
 				}
   			   
@@ -219,6 +230,11 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	h_n_hits_fix_b_A->Fill(nhits_fix_b_A);
 	h_n_hits_fix_t_B->Fill(nhits_fix_t_B);
 	h_n_hits_fix_b_B->Fill(nhits_fix_b_B);
+	
+	h_n_hits_dut_A->Fill(nhits_dut_A);
+	h_n_hits_dut_B->Fill(nhits_dut_B);
+	h_n_hits_fix_A->Fill(nhits_fix_A);
+	h_n_hits_fix_B->Fill(nhits_fix_B);
       	 	 
 	//Hit or no Hit
 	h_tot_dut_t->Fill((hits_dt.size()) ? 1 : 0);
@@ -274,6 +290,12 @@ LL_Analysis::beginJob()
   	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,0.,127.);
   	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,0.,127.);
   	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 127,0.,127.);
+	
+  	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 254,0.,254.);
+  	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 254,0.,254.);
+  	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 254,0.,254.);
+  	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 254,0.,254.);
+
 }
 
 

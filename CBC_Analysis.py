@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 import sys
 import re
+import string
 
 # Filenames for in and outfile
 if len(sys.argv) != 3:
@@ -9,12 +10,14 @@ if len(sys.argv) != 3:
 # runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
 runnumber = re.findall("run(\d+)",sys.argv[2])
 datafile = 'file:'+sys.argv[2]
-histofile = '/afs/cern.ch/user/g/gauzinge/tb_results/run' + runnumber[0] + '_analysis.root'
+
+histofile = datafile.replace("_clusters","_results")
+histofile = histofile.replace("/clusters/","/results/")
 
 print '\nThe runnumber is ',runnumber[0]
 print '\nThe File to be read is ',datafile 
 print '\nThe histograms are written to ', histofile
-print '\n\n'
+print '\n'
 
 #set up a process , for e.g. Low Level Analysis in this case
 process = cms.Process("CBCAnalysis")
