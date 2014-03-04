@@ -8,11 +8,19 @@ if len(sys.argv) != 3:
 	print 'Wrong number of Command line arguments. Usage: cmsRun', sys.argv[1], 'datafile!\n\n' 
 
 # runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
-runnumber = re.findall("run(\d+)",sys.argv[2])
+# runnumber = re.findall("run(\d+)",sys.argv[2])
 datafile = 'file:'+sys.argv[2]
+print 'datafilestring', datafile
+if "USC" in datafile:
+	runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
+	histofile = datafile.replace("USC.00000","run")
+	histofile = histofile.replace(".0001.A.storageManager.00.0000","_clusters")
+	histofile = histofile.replace("_clusters","_results")
+else:
+	runnumber = re.findall("run(\d+)",sys.argv[2])
+	histofile = datafile.replace("_clusters","_results")
+	histofile = histofile.replace("/clusters/","/results/")
 
-histofile = datafile.replace("_clusters","_results")
-histofile = histofile.replace("/clusters/","/results/")
 
 print '\nThe runnumber is ',runnumber[0]
 print '\nThe File to be read is ',datafile 
@@ -56,10 +64,12 @@ process.lowlevel = cms.EDAnalyzer('LL_Analysis',
 		 sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012)
 )
 
-process.stubs = cms.EDAnalyzer('ClusterAndStubAnalyzer',
-	sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
-	modules = cms.untracked.vuint32(50000, 50010)
-)
-
 # process.mypath = cms.Path(process.conditions*process.lowlevel)
-process.mypath = cms.Path(process.conditions*process.lowlevel*process.stubs)
+if "USC" in datafile:
+	process.mypath = cms.Path(process.conditions*process.lowlevel)
+else:
+	process.stubs = cms.EDAnalyzer('ClusterAndStubAnalyzer',
+		sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
+		modules = cms.untracked.vuint32(50000, 50010)
+	)
+	process.mypath = cms.Path(process.conditions*process.lowlevel*process.stubs)
