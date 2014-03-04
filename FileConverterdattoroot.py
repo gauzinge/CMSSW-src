@@ -51,7 +51,7 @@ process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string(outfile)
 )
 
-process.p1 = cms.Path(process.ana)
+# process.p1 = cms.Path(process.ana)
 process.p2 = cms.EndPath(process.out)
 
 
