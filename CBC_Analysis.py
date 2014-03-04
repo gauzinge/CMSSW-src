@@ -14,8 +14,8 @@ print 'datafilestring', datafile
 if "USC" in datafile:
 	runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
 	histofile = datafile.replace("USC.00000","run")
-	histofile = histofile.replace(".0001.A.storageManager.00.0000","_clusters")
-	histofile = histofile.replace("_clusters","_results")
+	histofile = histofile.replace(".0001.A.storageManager.00.0000","_results")
+	histofile = histofile.replace("/digis/","/results/")
 else:
 	runnumber = re.findall("run(\d+)",sys.argv[2])
 	histofile = datafile.replace("_clusters","_results")
