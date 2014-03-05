@@ -19,10 +19,10 @@ process.StubFinder = cms.EDProducer('ClusterAndStubFinder',
 		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
 )
 
-#TfileService for Histograms
-process.TFileService = cms.Service("TFileService",
-    fileName = cms.string("/afs/cern.ch/user/g/gauzinge/tb_results/myHistoFile.root")
-)
+# #TfileService for Histograms
+# process.TFileService = cms.Service("TFileService",
+#     fileName = cms.string("/afs/cern.ch/user/g/gauzinge/tb_results/myHistoFile.root")
+# )
 
 process.out = cms.OutputModule("PoolOutputModule",
     fileName = cms.untracked.string('file:/afs/cern.ch/user/g/gauzinge/tb_data/run487_clusters.root')

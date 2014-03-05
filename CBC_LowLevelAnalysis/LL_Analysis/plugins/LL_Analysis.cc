@@ -20,6 +20,12 @@
 
 // system include files
 #include <memory>
+#include <map>
+#include <vector>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <set>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -42,6 +48,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+
 
 
 class LL_Analysis : public edm::EDAnalyzer {
@@ -101,6 +108,11 @@ class LL_Analysis : public edm::EDAnalyzer {
       virtual void beginJob() override;
       virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
       virtual void endJob() override;
+	  
+	  std::string bad_strip_file;
+	  std::map<int, std::set<int> > bad_strips;
+	  void read_bad_strips(std::string);
+	  bool strip_masked(unsigned int detid, int strip);
 };
 
 
@@ -108,6 +120,9 @@ LL_Analysis::LL_Analysis(const edm::ParameterSet& iConfig)
 
 {
    //now do what ever initialization is needed
+	bad_strip_file = iConfig.getParameter<std::string>( "bad_strip_file" );
+	read_bad_strips(bad_strip_file);
+	
 }
 
 
@@ -178,7 +193,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		{
 			int adc = DSiter->adc();
   		   
-			if (adc > 250)
+			if (adc > 250 && !strip_masked(detid,DSiter->row()))
 			{
 				//Fill strip number of every hit in Histo - > Beam Profile
 				switch (detid)
@@ -312,6 +327,52 @@ LL_Analysis::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   desc.setUnknown();
   descriptions.addDefault(desc);
 }
+
+void
+LL_Analysis::read_bad_strips(std::string bad_strip_file)
+{
+	//read the file with bad strips
+	std::ifstream mask(bad_strip_file.c_str());
+	if (!mask) std::cout << "No bad strip file " << bad_strip_file << " found, continuing wihtout!" << std::endl;
+	while(!mask.eof())
+	{
+		std::string line;
+		std::getline(mask, line);
+		std::stringstream linestream(line);
+		std::istream_iterator<int> begin(linestream), eos;
+		int module;
+		if (begin == eos) 
+		{
+			module = *begin;
+			std::set<int> bad_strip_set;
+			this->bad_strips[module] = bad_strip_set;
+		}
+		else
+		{
+			module = *begin;
+			begin++;
+			std::set<int> bad_strip_set (begin, eos);
+			this->bad_strips[module] = bad_strip_set;
+		}
+	}
+	
+	for (std::map< int, std::set<int> >::iterator map_it = this->bad_strips.begin(); map_it != this->bad_strips.end(); map_it++)
+	{
+		std::cout << "Reading bad strips for Module " << map_it->first << " : ";
+		for (std::set<int>::iterator it = map_it->second.begin(); it != map_it->second.end(); it++)
+		{
+			std::cout << *it << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+bool LL_Analysis::strip_masked(unsigned int detid, int strip)
+{
+	if (this->bad_strips[detid].find(strip) != this->bad_strips[detid].end()) return true;
+	else return false;
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(LL_Analysis);

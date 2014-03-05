@@ -13,7 +13,9 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.demo = cms.EDAnalyzer('LL_Analysis'
+process.demo = cms.EDAnalyzer('LL_Analysis',
+		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
+
 )
 
 
