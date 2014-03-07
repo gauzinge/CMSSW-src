@@ -12,8 +12,8 @@ if len(sys.argv) != 3:
 datafile = 'file:'+sys.argv[2]
 print 'datafilestring', datafile
 if "USC" in datafile:
-	runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
-	histofile = datafile.replace("USC.00000","run")
+	runnumber = re.findall("USC.000(\d+)",sys.argv[2])
+	histofile = datafile.replace("USC.000","run")
 	histofile = histofile.replace(".0001.A.storageManager.00.0000","_results")
 	histofile = histofile.replace("/digis/","/results/")
 else:

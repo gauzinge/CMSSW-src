@@ -6,10 +6,10 @@ import re
 if len(sys.argv) != 3:
 	print 'Wrong number of Command line arguments. Usage: cmsRun', sys.argv[1], 'datafile!\n\n' 
 
-runnumber = re.findall("USC.00000(\d+)",sys.argv[2])
+runnumber = re.findall("USC.000(\d+)",sys.argv[2])
 datafile = 'file:'+sys.argv[2]
 # outfile = '/afs/cern.ch/user/g/gauzinge/tb_data/clusters/run' + runnumber[0] + '_clusters.root'
-outfile = datafile.replace("USC.00000","run")
+outfile = datafile.replace("USC.000","run")
 outfile = outfile.replace(".0001.A.storageManager.00.0000","_clusters")
 outfile = outfile.replace("/digis/","/clusters/")
 
