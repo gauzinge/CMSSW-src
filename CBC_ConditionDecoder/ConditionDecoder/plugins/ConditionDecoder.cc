@@ -40,6 +40,24 @@
 
 #include "TH1D.h"
 
+#define NSTUBS 0x0b0000ff
+#define STUBMASK 0x00000003
+#define TRGPHASE 0x030000ff
+#define DUTANGLE 0x040000ff
+#define HVDUT 0x05000000
+#define HVFIX 0x05000001
+#define CBCERROR 0x060000ff
+#define PIPELINE 0x070000ff
+#define TRGLATENCYDUT0 0x01014000 
+#define TRGLATENCYDUT1 0x01014100
+#define TRGLATENCYFIX0 0x01014001
+#define TRGLATENCYFIX1 0x01014101
+#define VCTHDUT0 0x017F4000
+#define VCTHDUT1 0x017F4100
+#define VCTHFIX0 0x017F4001
+#define VCTHFIX1 0x017F4101
+
+
 class ConditionDecoder : public edm::EDAnalyzer {
    public:
       explicit ConditionDecoder(const edm::ParameterSet&);
@@ -65,6 +83,12 @@ class ConditionDecoder : public edm::EDAnalyzer {
 	  TH1D * h_angle_dut;
 	  TH1D * h_hv_dut;
 	  TH1D * h_hv_fix;
+	  
+	  TH1D* h_trg_latency_dut;
+	  TH1D* h_trg_latency_fix;
+	  
+	  TH1D* h_vcth_dut;
+	  TH1D* h_vcth_fix;
  
 	  
    private:
@@ -107,11 +131,11 @@ ConditionDecoder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
    DetSet<SiStripCommissioningDigi>::const_iterator it = cbcCommissioningEvent_->data.begin();
    for(; it != cbcCommissioningEvent_->data.end(); it++)
    {
-	   if( it->getKey() == 0x0b0000ff ) //Stubs
+	   if( it->getKey() == NSTUBS ) //Stubs
 	   {
 		   int value = it->getValue();
-		   int stubs_DUT = value & 0x00000003; //decode stub bits DUT & FIX
-		   int stubs_FIX = (value >> 2 ) & 0x00000003;
+		   int stubs_DUT = value & STUBMASK; //decode stub bits DUT & FIX
+		   int stubs_FIX = (value >> 2 ) & STUBMASK;
 		   
 		   //Fill Stub Histograms
 		   h_stubs_DUT->Fill(stubs_DUT);
@@ -122,38 +146,38 @@ ConditionDecoder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		   if (stubs_FIX) stub_fix = 1;
 	   }
 	   
-	   if (it->getKey() == 0x030000ff) // TDC Phase
+	   if (it->getKey() == TRGPHASE) // TDC Phase
 	   {
 		   int value = it->getValue();
 		   (value == 12) ? tdc = 0 : tdc = value - 4; // if not 12 -> value - 4
            h_tdc->Fill(value);
 	   }
 	   
-	   if (it->getKey() == 0x040000ff) // DUT Angle or similar
+	   if (it->getKey() == DUTANGLE) // DUT Angle or similar
 	   {
 		   int angle = it->getValue();
 		   h_angle_dut->Fill(angle);
 	   }
 	   
 	   //This could be done more elegant
-	   if (it->getKey() == 0x05000000) //HV Settings DUT
+	   if (it->getKey() == HVDUT) //HV Settings DUT
 	   {
 		   int hv_DUT = it->getValue(); 
 		   h_hv_dut->Fill(hv_DUT);		   
 	   }
-	   if (it->getKey() == 0x05000001) //HV Settings FIX
+	   if (it->getKey() == HVFIX) //HV Settings FIX
 	   {
 		   int hv_FIX = it->getValue(); 
 		   h_hv_fix->Fill(hv_FIX);
 	   }
 	   
-       if( it->getKey() == 0x060000ff ) //CBC Error
+       if( it->getKey() == CBCERROR ) //CBC Error
 	   {
          	int value = it->getValue() & 0x0000000f;
         	h_error->Fill(value);
        }
 	   
-       if( it->getKey() == 0x070000ff ) //Pipeline Address
+       if( it->getKey() == PIPELINE ) //Pipeline Address
 	   {
 		   int value = it->getValue();
 		   int pipe_addr[4]={0,0,0,0};
@@ -166,6 +190,24 @@ ConditionDecoder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		   h_pipeline->Fill(pipe_addr[0]);
 		   int pipematch = ((pipe_addr[0] ^ pipe_addr[1]) ^ (pipe_addr[2] ^ pipe_addr[3])) ? 1 : 0 ;
 		   h_pipematch->Fill(pipematch);
+	   }
+	   
+	   if (it->getKey() == TRGLATENCYDUT0 || it->getKey() == TRGLATENCYDUT1 ) // TRG Latency DUT (fill both in same histogram and check at readtime for multiple bins)
+	   {
+		   h_trg_latency_dut->Fill(static_cast<double>(it->getValue()));
+	   }
+	   if (it->getKey() == TRGLATENCYFIX0 || it->getKey() == TRGLATENCYFIX1 ) // TRG Latency FIX (fill both in same histogram and check at readtime for multiple bins)
+	   {
+		   h_trg_latency_fix->Fill(static_cast<double>(it->getValue()));
+	   }
+	   
+	   if (it->getKey() == VCTHDUT0 || it->getKey() == VCTHDUT1 ) // VCTH for DUT fill both in same histo and check for multiple bins at readtime
+	   {
+		   h_vcth_dut->Fill(static_cast<double>(it->getValue()));
+	   }
+	   if (it->getKey() == VCTHFIX0 || it->getKey() == VCTHFIX1 ) // VCTH for FIX
+	   {
+		   h_vcth_fix->Fill(static_cast<double>(it->getValue()));
 	   }
    }
    
@@ -215,6 +257,14 @@ ConditionDecoder::beginJob()
 	//HV Settings
 	h_hv_dut = fs->make<TH1D>("h_hv_dut","DUT HV Settings",500,0.,500.);
 	h_hv_fix = fs->make<TH1D>("h_hv_fix","FIX HV Settings",500,0.,500.);
+	
+	// TRG Latency
+	h_trg_latency_dut = fs->make<TH1D>("h_trg_latency_dut","DUT TRG Latency",35,0.,35.);
+	h_trg_latency_fix = fs->make<TH1D>("h_trg_latency_fix","FIX TRG Latency",35,0.,35.);
+	
+	//VCth
+	h_vcth_dut = fs->make<TH1D>("h_vcth_dut","DUT Comparator Threshold",250,0.,250.);
+	h_vcth_fix = fs->make<TH1D>("h_vcth_fix","FIX Comparator Threshold",250,0.,250.);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
