@@ -48,6 +48,7 @@
 #define HVFIX 0x05000001
 #define CBCERROR 0x060000ff
 #define PIPELINE 0x070000ff
+#define MISCPARAMETER 0x080000FF
 #define TRGLATENCYDUT0 0x01014000 
 #define TRGLATENCYDUT1 0x01014100
 #define TRGLATENCYFIX0 0x01014001
@@ -89,6 +90,8 @@ class ConditionDecoder : public edm::EDAnalyzer {
 	  
 	  TH1D* h_vcth_dut;
 	  TH1D* h_vcth_fix;
+	  
+	  TH1D* h_misc_parameter;
  
 	  
    private:
@@ -209,6 +212,10 @@ ConditionDecoder::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	   {
 		   h_vcth_fix->Fill(static_cast<double>(it->getValue()));
 	   }
+	   if (it->getKey() == MISCPARAMETER)
+	   {
+		   h_misc_parameter->Fill(static_cast<double>(it->getValue()));
+	   }
    }
    
    //Increment Event Counter
@@ -265,6 +272,8 @@ ConditionDecoder::beginJob()
 	//VCth
 	h_vcth_dut = fs->make<TH1D>("h_vcth_dut","DUT Comparator Threshold",250,0.,250.);
 	h_vcth_fix = fs->make<TH1D>("h_vcth_fix","FIX Comparator Threshold",250,0.,250.);
+	
+	h_misc_parameter = fs->make<TH1D>("h_misc_parameter","Miscellaneous Parameter",500,0.,500.);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
