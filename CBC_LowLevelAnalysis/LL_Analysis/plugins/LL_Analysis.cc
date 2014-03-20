@@ -278,10 +278,10 @@ LL_Analysis::beginJob()
 	edm::Service<TFileService> fs;
 
   	//Total number of Hits
-    h_hits_DUT_b = fs->make<TH1D>("h_hits_DUT_b","Hits DUT top",256,0.,256.);
-    h_hits_DUT_t = fs->make<TH1D>("h_hits_DUT_t","Hits DUT bot",256,0.,256.);
-    h_hits_FIX_b = fs->make<TH1D>("h_hits_FIX_b","Hits FIX top",256,0.,256.);
-    h_hits_FIX_t = fs->make<TH1D>("h_hits_FIX_t","Hits FIX bot",256,0.,256.);
+    h_hits_DUT_b = fs->make<TH1D>("h_hits_DUT_b","Hits DUT top",257,-0.5,256.5);
+    h_hits_DUT_t = fs->make<TH1D>("h_hits_DUT_t","Hits DUT bot",257,-0.5,256.5);
+    h_hits_FIX_b = fs->make<TH1D>("h_hits_FIX_b","Hits FIX top",257,-0.5,256.5);
+    h_hits_FIX_t = fs->make<TH1D>("h_hits_FIX_t","Hits FIX bot",257,-0.5,256.5);
 
 	//Hit or no hit per sensor
   	h_tot_dut_t = fs->make<TH1D>("h_tot_dut_t","Hits DUT top",2,0.,2.);
@@ -296,20 +296,20 @@ LL_Analysis::beginJob()
     h_tdc_fb = fs->make<TH1D>("h_tdc_fb","fix bottom",10,0.,10.);
 
   	//Hit Distribution
-  	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 127,0.,127.);
-  	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 127,0.,127.);
-  	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 127,0.,127.);
-  	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 127,0.,127.);
+  	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 128,-0.5,127.5);
+  	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 128,-0.5,127.5);
+  	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
+  	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
 
-  	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 127,0.,127.);
-  	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,0.,127.);
-  	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,0.,127.);
-  	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 127,0.,127.);
+  	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 128,-0.5,127.5);
+  	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 128,-0.5,127.5);
+  	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 128,-0.5,127.5);
+  	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 128,-0.5,127.5);
 	
-  	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 254,0.,254.);
-  	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 254,0.,254.);
-  	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 254,0.,254.);
-  	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 254,0.,254.);
+  	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 255,-0.5,254.5);
+  	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 255,-0.5,254.5);
+  	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 255,-0.5,254.5);
+  	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 255,-0.5,254.5);
 
 }
 
