@@ -48,6 +48,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TProfile2D.h"
 
 
 
@@ -100,6 +101,24 @@ class LL_Analysis : public edm::EDAnalyzer {
 	  TH1D* h_n_hits_dut_B;
 	  TH1D* h_n_hits_fix_A;
 	  TH1D* h_n_hits_fix_B;
+	  
+	  //2D Histograms and Profiles for CMN identification
+	  // TH2D* h_cmn_dut_A;
+ // 	  TH2D* h_cmn_dut_B;
+ // 	  TH2D* h_cmn_fix_A;
+ // 	  TH2D* h_cmn_fix_B;
+ // 	  
+	  TH2D* h_cmn_dut_t;
+	  TH2D* h_cmn_dut_b;
+	  TH2D* h_cmn_fix_t;
+	  TH2D* h_cmn_fix_b;
+	  
+	  TProfile2D* p_cmn_cor_dut_t;
+	  TProfile2D* p_cmn_cor_dut_b;
+	  TProfile2D* p_cmn_cor_fix_t;
+	  TProfile2D* p_cmn_cor_fix_b;
+	  
+	  
 	  
       int n_events;
 
@@ -192,7 +211,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		for(; DSiter != DSViter->data.end(); DSiter++) // hit loop
 		{
 			int adc = DSiter->adc();
-  		   
+			   
 			if (adc > 250 && !strip_masked(detid,DSiter->row()))
 			{
 				//Fill strip number of every hit in Histo - > Beam Profile
@@ -202,6 +221,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_DUT_t->Fill(DSiter->row());
 						hits_dt.push_back(DSiter->row());
+						h_cmn_dut_t->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_dut_t_A++, nhits_dut_A++;
 						else if (DSiter->row() >= 127) nhits_dut_t_B++, nhits_dut_B++;
 						break; //CNM top
@@ -210,6 +230,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_DUT_b->Fill(DSiter->row());
 						hits_db.push_back(DSiter->row());
+						h_cmn_dut_b->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_dut_b_A++, nhits_dut_A++;
 						else if (DSiter->row() >= 127) nhits_dut_b_B++, nhits_dut_B++;
 						break; //CNM bottom
@@ -218,6 +239,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_FIX_t->Fill(DSiter->row()); 
 						hits_ft.push_back(DSiter->row());
+						h_cmn_fix_t->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_fix_t_A++, nhits_fix_A++;
 						else if (DSiter->row() >= 127) nhits_fix_t_B++, nhits_fix_B++;
 						break; //Infineon top
@@ -226,15 +248,63 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_FIX_b->Fill(DSiter->row()); 
 						hits_fb.push_back(DSiter->row());
+						h_cmn_fix_b->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_fix_b_A++, nhits_fix_A++;
 						else if (DSiter->row() >= 127) nhits_fix_b_B++, nhits_fix_B++;
 					}
 				}
-  			   
 			}
 		} //End of hit loop
+		
+		// CMN 2D Profile Loop 
+		DetSet<PixelDigi>::const_iterator DSiter1 = DSViter->data.begin();
+		DetSet<PixelDigi>::const_iterator DSiter2 = DSViter->data.begin();
+		
+		for(; DSiter1 != DSViter->data.end(); DSiter1++) // first hit loop
+		{
+			// loop x axis of 2D profile
+			int adc1 = DSiter1->adc();
+			int strip1 = DSiter1->row();
+			
+			if (adc1 > 250 && !strip_masked(detid,strip1))
+			{
+				for(; DSiter2 != DSViter->data.end(); DSiter2++) // second hit loop
+				{
+					int adc2 = DSiter2->adc();
+					int strip2 = DSiter2->row();
+					
+					if (adc2 > 250 && !strip_masked(detid,strip2))
+					{
+						// here i have the loop over each strip, basically  y in the 2D profile
+						switch (detid)
+						{
+							case 51001: 
+							{
+								p_cmn_cor_dut_t->Fill(strip1,strip2,1);
+								break;
+							}
+							case 51002: 
+							{
+								p_cmn_cor_dut_b->Fill(strip1,strip2,1);
+								break;
+							}
+							case 51011: 
+							{
+								p_cmn_cor_fix_t->Fill(strip1,strip2,1);
+								break;
+							}
+							case 51012: 
+							{
+								p_cmn_cor_fix_b->Fill(strip1,strip2,1);
+								break;
+							}
+						} //end of 2nd switch
+					}
+				} // end of 2nd 2nd hit loop
+			} 
+		} // end of 2nd 1st hit loop
 	} //End of module loop
-   		 
+	
 	//Number of hits per chip for CM Noise
 	h_n_hits_dut_t_A->Fill(nhits_dut_t_A);
 	h_n_hits_dut_b_A->Fill(nhits_dut_b_A);
@@ -264,7 +334,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     if (hits_fb.size()) h_tdc_fb->Fill(tdc);
    
 	// LogDebug ("") << "hits dut A " << nhits_dut_A << " hits dut B " << nhits_dut_B << " hits fix A " << nhits_fix_A << " hits fix B " << nhits_fix_B ;
-   
+	
 	n_events++;
 }
 
@@ -274,43 +344,55 @@ void
 LL_Analysis::beginJob()
 {
 	n_events = 0;
-
-	edm::Service<TFileService> fs;
-
-  	//Total number of Hits
-    h_hits_DUT_b = fs->make<TH1D>("h_hits_DUT_b","Hits DUT top",257,-0.5,256.5);
-    h_hits_DUT_t = fs->make<TH1D>("h_hits_DUT_t","Hits DUT bot",257,-0.5,256.5);
-    h_hits_FIX_b = fs->make<TH1D>("h_hits_FIX_b","Hits FIX top",257,-0.5,256.5);
-    h_hits_FIX_t = fs->make<TH1D>("h_hits_FIX_t","Hits FIX bot",257,-0.5,256.5);
-
-	//Hit or no hit per sensor
-  	h_tot_dut_t = fs->make<TH1D>("h_tot_dut_t","Hits DUT top",2,0.,2.);
-  	h_tot_dut_b = fs->make<TH1D>("h_tot_dut_b","Hits DUT bot",2,0.,2.);
-  	h_tot_fix_t = fs->make<TH1D>("h_tot_fix_t","Hits FIX top",2,0.,2.);
-  	h_tot_fix_b = fs->make<TH1D>("h_tot_fix_b","Hits FIX bot",2,0.,2.);   
-
-	//TDC for every hit on every sensor  
-    h_tdc_dt = fs->make<TH1D>("h_tdc_dt","dut top",10,0.,10.);
-    h_tdc_db = fs->make<TH1D>("h_tdc_db","dut bottom",10,0.,10.);
-    h_tdc_ft = fs->make<TH1D>("h_tdc_ft","fix top",10,0.,10.);
-    h_tdc_fb = fs->make<TH1D>("h_tdc_fb","fix bottom",10,0.,10.);
-
-  	//Hit Distribution
-  	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 128,-0.5,127.5);
-  	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 128,-0.5,127.5);
-  	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
-  	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
-
-  	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 128,-0.5,127.5);
-  	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 128,-0.5,127.5);
-  	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 128,-0.5,127.5);
-  	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 128,-0.5,127.5);
 	
-  	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 255,-0.5,254.5);
-  	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 255,-0.5,254.5);
-  	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 255,-0.5,254.5);
-  	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 255,-0.5,254.5);
-
+	edm::Service<TFileService> fs;
+	
+	//Total number of Hits
+	h_hits_DUT_b = fs->make<TH1D>("h_hits_DUT_b","Hits DUT top",257,-0.5,256.5);
+	h_hits_DUT_t = fs->make<TH1D>("h_hits_DUT_t","Hits DUT bot",257,-0.5,256.5);
+	h_hits_FIX_b = fs->make<TH1D>("h_hits_FIX_b","Hits FIX top",257,-0.5,256.5);
+	h_hits_FIX_t = fs->make<TH1D>("h_hits_FIX_t","Hits FIX bot",257,-0.5,256.5);
+	
+	//Hit or no hit per sensor
+	h_tot_dut_t = fs->make<TH1D>("h_tot_dut_t","Hits DUT top",2,0.,2.);
+	h_tot_dut_b = fs->make<TH1D>("h_tot_dut_b","Hits DUT bot",2,0.,2.);
+	h_tot_fix_t = fs->make<TH1D>("h_tot_fix_t","Hits FIX top",2,0.,2.);
+	h_tot_fix_b = fs->make<TH1D>("h_tot_fix_b","Hits FIX bot",2,0.,2.);   
+	
+	//TDC for every hit on every sensor  
+	h_tdc_dt = fs->make<TH1D>("h_tdc_dt","dut top",10,0.,10.);
+	h_tdc_db = fs->make<TH1D>("h_tdc_db","dut bottom",10,0.,10.);
+	h_tdc_ft = fs->make<TH1D>("h_tdc_ft","fix top",10,0.,10.);
+	h_tdc_fb = fs->make<TH1D>("h_tdc_fb","fix bottom",10,0.,10.);
+	
+	//Hit Distribution
+	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 128,-0.5,127.5);
+	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 128,-0.5,127.5);
+	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
+	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
+	
+	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 127,-0.5,127.5);
+	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,-0.5,127.5);
+	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,-0.5,127.5);
+	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 127,-0.5,127.5);
+	
+	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 254,-0.5,254.5);
+	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 254,-0.5,254.5);
+	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 254,-0.5,254.5);
+	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 254,-0.5,254.5);
+	
+	// 2D Histograms for CMN Analysis
+	h_cmn_dut_t = fs->make<TH2D>("h_cmn_dut_t","CMN Raw Data Plot DUT top",254,-.5,254.5,300000,0,300000);
+	h_cmn_dut_b = fs->make<TH2D>("h_cmn_dut_b","CMN Raw Data Plot DUT bottom",254,-.5,254.5,300000,0,300000);
+	
+	h_cmn_fix_t = fs->make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,300000,0,300000);
+	h_cmn_fix_b = fs->make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,300000,0,300000);
+	
+	p_cmn_cor_dut_t = fs->make<TProfile2D>("h_cmn_cor_dut_t","CMN Correlation Plot DUT top",254,-.5,254.5,254,-.5,254.5);
+	p_cmn_cor_dut_b = fs->make<TProfile2D>("h_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",254,-.5,254.5,254,-.5,254.5);
+	
+	p_cmn_cor_fix_t = fs->make<TProfile2D>("h_cmn_cor_fix_t","CMN Correlation Plot FIX top",254,-.5,254.5,254,-.5,254.5);
+	p_cmn_cor_fix_b = fs->make<TProfile2D>("h_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",254,-.5,254.5,254,-.5,254.5);
 }
 
 
