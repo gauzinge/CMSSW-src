@@ -68,7 +68,7 @@ class LL_Analysis : public edm::EDAnalyzer {
 
 	  //Histograms
 
-	  //Total number of Hits
+	  //Hit Profiles
       TH1D * h_hits_DUT_t;
       TH1D * h_hits_DUT_b;
       TH1D * h_hits_FIX_t;
@@ -167,21 +167,6 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 	std::vector<int> hits_ft;
 	std::vector<int> hits_fb;
    
-	int nhits_dut_t_A = 0;
-	int nhits_dut_b_A = 0;
-	int nhits_dut_t_B = 0;
-	int nhits_dut_b_B = 0;
-	
-	int nhits_fix_t_A = 0;
-	int nhits_fix_b_A = 0;
-	int nhits_fix_t_B = 0;
-	int nhits_fix_b_B = 0;
-   
-	int nhits_dut_A = 0;
-	int nhits_dut_B = 0;
-	int nhits_fix_A = 0;
-	int nhits_fix_B = 0;
-   
 	int tdc = 0;
 
 	// | INFCBCB | INFCBCA | CNMCBCB | CNMCBCA
@@ -221,98 +206,31 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_DUT_t->Fill(DSiter->row());
 						hits_dt.push_back(DSiter->row());
-						if (n_events < 10000) h_cmn_dut_t->Fill(DSiter->row(),n_events);
-						if (DSiter->row() < 127) nhits_dut_t_A++, nhits_dut_A++;
-						else if (DSiter->row() >= 127) nhits_dut_t_B++, nhits_dut_B++;
 						break; //CNM top
 					}
 					case 51002: 
 					{
 						h_hits_DUT_b->Fill(DSiter->row());
 						hits_db.push_back(DSiter->row());
-						if (n_events < 10000) h_cmn_dut_b->Fill(DSiter->row(),n_events);
-						if (DSiter->row() < 127) nhits_dut_b_A++, nhits_dut_A++;
-						else if (DSiter->row() >= 127) nhits_dut_b_B++, nhits_dut_B++;
 						break; //CNM bottom
 					}
 					case 51011: 
 					{
 						h_hits_FIX_t->Fill(DSiter->row()); 
 						hits_ft.push_back(DSiter->row());
-						if (n_events < 10000) h_cmn_fix_t->Fill(DSiter->row(),n_events);
-						if (DSiter->row() < 127) nhits_fix_t_A++, nhits_fix_A++;
-						else if (DSiter->row() >= 127) nhits_fix_t_B++, nhits_fix_B++;
 						break; //Infineon top
 					}
 					case 51012: 
 					{
 						h_hits_FIX_b->Fill(DSiter->row()); 
 						hits_fb.push_back(DSiter->row());
-						if (n_events < 10000) h_cmn_fix_b->Fill(DSiter->row(),n_events);
-						if (DSiter->row() < 127) nhits_fix_b_A++, nhits_fix_A++;
-						else if (DSiter->row() >= 127) nhits_fix_b_B++, nhits_fix_B++;
+						break;
 					}
 				}
 			}
 		} //End of hit loop
-		
-		// CMN 2D Profile Loop 
-		DetSet<PixelDigi>::const_iterator DSiter1;// = DSViter->data.begin();
-		DetSet<PixelDigi>::const_iterator DSiter2;// = DSViter->data.begin();
-		
-		for(DSiter1 = DSViter->data.begin(); DSiter1 != DSViter->data.end(); DSiter1++) // first hit loop
-		{
-			// loop x axis of 2D profile
-			int strip1 = DSiter1->row();
-				
-			for(DSiter2 = DSViter->data.begin(); DSiter2 != DSViter->data.end(); DSiter2++) // second hit loop
-			{
-				int strip2 = DSiter2->row();
-					
-				// here i have the loop over each strip, basically  y in the 2D profile
-				switch (detid)
-				{
-					case 51001: 
-					{
-						p_cmn_cor_dut_t->Fill(strip1,strip2,1);
-						break;
-					}
-					case 51002: 
-					{
-						p_cmn_cor_dut_b->Fill(strip1,strip2,1);
-						break;
-					}
-					case 51011: 
-					{
-						p_cmn_cor_fix_t->Fill(strip1,strip2,1);
-						break;
-					}
-					case 51012: 
-					{
-						p_cmn_cor_fix_b->Fill(strip1,strip2,1);
-						break;
-					}
-				} //end of 2nd switch
-			} // end of 2nd 2nd hit loop
-		} // end of 2nd 1st hit loop
-	} //End of module loop
+	} //End of Modules loop
 	
-	//Number of hits per chip for CM Noise
-	h_n_hits_dut_t_A->Fill(nhits_dut_t_A);
-	h_n_hits_dut_b_A->Fill(nhits_dut_b_A);
-	h_n_hits_dut_t_B->Fill(nhits_dut_t_B);
-	h_n_hits_dut_b_B->Fill(nhits_dut_b_B);
-	
-	h_n_hits_fix_t_A->Fill(nhits_fix_t_A);
-	h_n_hits_fix_b_A->Fill(nhits_fix_b_A);
-	h_n_hits_fix_t_B->Fill(nhits_fix_t_B);
-	h_n_hits_fix_b_B->Fill(nhits_fix_b_B);
-	
-	h_n_hits_dut_A->Fill(nhits_dut_A);
-	h_n_hits_dut_B->Fill(nhits_dut_B);
-	h_n_hits_fix_A->Fill(nhits_fix_A);
-	h_n_hits_fix_B->Fill(nhits_fix_B);
-      	 	 
 	//Hit or no Hit
 	h_tot_dut_t->Fill((hits_dt.size()) ? 1 : 0);
 	h_tot_dut_b->Fill((hits_db.size()) ? 1 : 0);
@@ -356,35 +274,6 @@ LL_Analysis::beginJob()
 	h_tdc_db = fs->make<TH1D>("h_tdc_db","dut bottom",10,0.,10.);
 	h_tdc_ft = fs->make<TH1D>("h_tdc_ft","fix top",10,0.,10.);
 	h_tdc_fb = fs->make<TH1D>("h_tdc_fb","fix bottom",10,0.,10.);
-	
-	//Hit Distribution
-	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 128,-0.5,127.5);
-	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 128,-0.5,127.5);
-	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
-	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
-	
-	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 127,-0.5,127.5);
-	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,-0.5,127.5);
-	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,-0.5,127.5);
-	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 127,-0.5,127.5);
-	
-	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 254,-0.5,254.5);
-	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 254,-0.5,254.5);
-	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 254,-0.5,254.5);
-	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 254,-0.5,254.5);
-	
-	// 2D Histograms for CMN Analysis
-	h_cmn_dut_t = fs->make<TH2D>("h_cmn_dut_t","CMN Raw Data Plot DUT top",254,-.5,254.5,10000,0,10000);
-	h_cmn_dut_b = fs->make<TH2D>("h_cmn_dut_b","CMN Raw Data Plot DUT bottom",254,-.5,254.5,10000,0,10000);
-	
-	h_cmn_fix_t = fs->make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,10000,0,10000);
-	h_cmn_fix_b = fs->make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,10000,0,10000);
-	
-	p_cmn_cor_dut_t = fs->make<TProfile2D>("h_cmn_cor_dut_t","CMN Correlation Plot DUT top",254,-.5,254.5,254,-.5,254.5);
-	p_cmn_cor_dut_b = fs->make<TProfile2D>("h_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",254,-.5,254.5,254,-.5,254.5);
-	
-	p_cmn_cor_fix_t = fs->make<TProfile2D>("h_cmn_cor_fix_t","CMN Correlation Plot FIX top",254,-.5,254.5,254,-.5,254.5);
-	p_cmn_cor_fix_b = fs->make<TProfile2D>("h_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",254,-.5,254.5,254,-.5,254.5);
 }
 
 

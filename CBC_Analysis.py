@@ -65,13 +65,18 @@ process.lowlevel = cms.EDAnalyzer('LL_Analysis',
 		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
 )
 
+# CM Noise Analysis
+process.cmn = cms.EDAnalyzer('CMN_Analysis',
+		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
+)
+
 # process.mypath = cms.Path(process.conditions*process.lowlevel)
 if "USC" in datafile:
-	process.mypath = cms.Path(process.conditions*process.lowlevel)
+	process.mypath = cms.Path(process.conditions*process.lowlevel*process.cmn)
 else:
 	# bad Strips are already masked in the Cluster&Stub Producer
 	process.stubs = cms.EDAnalyzer('ClusterAndStubAnalyzer',
 		sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
 		modules = cms.untracked.vuint32(50000, 50010)
 	)
-	process.mypath = cms.Path(process.conditions*process.lowlevel*process.stubs)
+	process.mypath = cms.Path(process.conditions*process.lowlevel*process.cmn*process.stubs)

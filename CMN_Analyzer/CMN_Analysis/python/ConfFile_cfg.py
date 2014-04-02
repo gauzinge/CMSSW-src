@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
-# wad demo instead of LL_Analysis
-process = cms.Process("LL_Analysis") 
+
+process = cms.Process("CMN_Analysis")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
@@ -13,7 +13,7 @@ process.source = cms.Source("PoolSource",
     )
 )
 
-process.demo = cms.EDAnalyzer('LL_Analysis',
+process.demo = cms.EDAnalyzer('CMN_Analysis',
 		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
 )
 
