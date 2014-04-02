@@ -221,7 +221,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_DUT_t->Fill(DSiter->row());
 						hits_dt.push_back(DSiter->row());
-						h_cmn_dut_t->Fill(DSiter->row(),n_events);
+						if (n_events < 10000) h_cmn_dut_t->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_dut_t_A++, nhits_dut_A++;
 						else if (DSiter->row() >= 127) nhits_dut_t_B++, nhits_dut_B++;
 						break; //CNM top
@@ -230,7 +230,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_DUT_b->Fill(DSiter->row());
 						hits_db.push_back(DSiter->row());
-						h_cmn_dut_b->Fill(DSiter->row(),n_events);
+						if (n_events < 10000) h_cmn_dut_b->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_dut_b_A++, nhits_dut_A++;
 						else if (DSiter->row() >= 127) nhits_dut_b_B++, nhits_dut_B++;
 						break; //CNM bottom
@@ -239,7 +239,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_FIX_t->Fill(DSiter->row()); 
 						hits_ft.push_back(DSiter->row());
-						h_cmn_fix_t->Fill(DSiter->row(),n_events);
+						if (n_events < 10000) h_cmn_fix_t->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_fix_t_A++, nhits_fix_A++;
 						else if (DSiter->row() >= 127) nhits_fix_t_B++, nhits_fix_B++;
 						break; //Infineon top
@@ -248,7 +248,7 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 					{
 						h_hits_FIX_b->Fill(DSiter->row()); 
 						hits_fb.push_back(DSiter->row());
-						h_cmn_fix_b->Fill(DSiter->row(),n_events);
+						if (n_events < 10000) h_cmn_fix_b->Fill(DSiter->row(),n_events);
 						if (DSiter->row() < 127) nhits_fix_b_A++, nhits_fix_A++;
 						else if (DSiter->row() >= 127) nhits_fix_b_B++, nhits_fix_B++;
 					}
@@ -257,51 +257,43 @@ void LL_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 		} //End of hit loop
 		
 		// CMN 2D Profile Loop 
-		DetSet<PixelDigi>::const_iterator DSiter1 = DSViter->data.begin();
-		DetSet<PixelDigi>::const_iterator DSiter2 = DSViter->data.begin();
+		DetSet<PixelDigi>::const_iterator DSiter1;// = DSViter->data.begin();
+		DetSet<PixelDigi>::const_iterator DSiter2;// = DSViter->data.begin();
 		
-		for(; DSiter1 != DSViter->data.end(); DSiter1++) // first hit loop
+		for(DSiter1 = DSViter->data.begin(); DSiter1 != DSViter->data.end(); DSiter1++) // first hit loop
 		{
 			// loop x axis of 2D profile
-			int adc1 = DSiter1->adc();
 			int strip1 = DSiter1->row();
-			
-			if (adc1 > 250 && !strip_masked(detid,strip1))
+				
+			for(DSiter2 = DSViter->data.begin(); DSiter2 != DSViter->data.end(); DSiter2++) // second hit loop
 			{
-				for(; DSiter2 != DSViter->data.end(); DSiter2++) // second hit loop
-				{
-					int adc2 = DSiter2->adc();
-					int strip2 = DSiter2->row();
+				int strip2 = DSiter2->row();
 					
-					if (adc2 > 250 && !strip_masked(detid,strip2))
+				// here i have the loop over each strip, basically  y in the 2D profile
+				switch (detid)
+				{
+					case 51001: 
 					{
-						// here i have the loop over each strip, basically  y in the 2D profile
-						switch (detid)
-						{
-							case 51001: 
-							{
-								p_cmn_cor_dut_t->Fill(strip1,strip2,1);
-								break;
-							}
-							case 51002: 
-							{
-								p_cmn_cor_dut_b->Fill(strip1,strip2,1);
-								break;
-							}
-							case 51011: 
-							{
-								p_cmn_cor_fix_t->Fill(strip1,strip2,1);
-								break;
-							}
-							case 51012: 
-							{
-								p_cmn_cor_fix_b->Fill(strip1,strip2,1);
-								break;
-							}
-						} //end of 2nd switch
+						p_cmn_cor_dut_t->Fill(strip1,strip2,1);
+						break;
 					}
-				} // end of 2nd 2nd hit loop
-			} 
+					case 51002: 
+					{
+						p_cmn_cor_dut_b->Fill(strip1,strip2,1);
+						break;
+					}
+					case 51011: 
+					{
+						p_cmn_cor_fix_t->Fill(strip1,strip2,1);
+						break;
+					}
+					case 51012: 
+					{
+						p_cmn_cor_fix_b->Fill(strip1,strip2,1);
+						break;
+					}
+				} //end of 2nd switch
+			} // end of 2nd 2nd hit loop
 		} // end of 2nd 1st hit loop
 	} //End of module loop
 	
@@ -382,11 +374,11 @@ LL_Analysis::beginJob()
 	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 254,-0.5,254.5);
 	
 	// 2D Histograms for CMN Analysis
-	h_cmn_dut_t = fs->make<TH2D>("h_cmn_dut_t","CMN Raw Data Plot DUT top",254,-.5,254.5,300000,0,300000);
-	h_cmn_dut_b = fs->make<TH2D>("h_cmn_dut_b","CMN Raw Data Plot DUT bottom",254,-.5,254.5,300000,0,300000);
+	h_cmn_dut_t = fs->make<TH2D>("h_cmn_dut_t","CMN Raw Data Plot DUT top",254,-.5,254.5,10000,0,10000);
+	h_cmn_dut_b = fs->make<TH2D>("h_cmn_dut_b","CMN Raw Data Plot DUT bottom",254,-.5,254.5,10000,0,10000);
 	
-	h_cmn_fix_t = fs->make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,300000,0,300000);
-	h_cmn_fix_b = fs->make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,300000,0,300000);
+	h_cmn_fix_t = fs->make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,10000,0,10000);
+	h_cmn_fix_b = fs->make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,10000,0,10000);
 	
 	p_cmn_cor_dut_t = fs->make<TProfile2D>("h_cmn_cor_dut_t","CMN Correlation Plot DUT top",254,-.5,254.5,254,-.5,254.5);
 	p_cmn_cor_dut_b = fs->make<TProfile2D>("h_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",254,-.5,254.5,254,-.5,254.5);
