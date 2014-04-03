@@ -48,6 +48,7 @@
 
 #include "TH1D.h"
 #include "TH2D.h"
+#include "TProfile.h"
 #include "TProfile2D.h"
 
 //
@@ -86,6 +87,11 @@ class CMN_Analysis : public edm::EDAnalyzer {
 	  TH2D* h_cmn_dut_b;
 	  TH2D* h_cmn_fix_t;
 	  TH2D* h_cmn_fix_b;
+	  
+	  TProfile* p_charge_sharing_dut_t;
+	  TProfile* p_charge_sharing_dut_b;
+	  TProfile* p_charge_sharing_fix_t;
+	  TProfile* p_charge_sharing_fix_b;
 	  
 	  TProfile2D* p_cmn_cor_dut_t;
 	  TProfile2D* p_cmn_cor_dut_b;
@@ -222,21 +228,25 @@ CMN_Analysis::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 					case 51001: 
 					{
 						p_cmn_cor_dut_t->Fill(strip1,strip2,1);
+						p_charge_sharing_dut_t->Fill(strip1-strip2,1);
 						break;
 					}
 					case 51002: 
 					{
 						p_cmn_cor_dut_b->Fill(strip1,strip2,1);
+						p_charge_sharing_dut_b->Fill(strip1-strip2,1);
 						break;
 					}
 					case 51011: 
 					{
 						p_cmn_cor_fix_t->Fill(strip1,strip2,1);
+						p_charge_sharing_fix_t->Fill(strip1-strip2,1);
 						break;
 					}
 					case 51012: 
 					{
 						p_cmn_cor_fix_b->Fill(strip1,strip2,1);
+						p_charge_sharing_fix_b->Fill(strip1-strip2,1);
 						break;
 					}
 				} //end of 2nd switch
@@ -294,11 +304,17 @@ void CMN_Analysis::beginJob()
 	h_cmn_fix_t = fs->make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,10000,0,10000);
 	h_cmn_fix_b = fs->make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,10000,0,10000);
 	
-	p_cmn_cor_dut_t = fs->make<TProfile2D>("h_cmn_cor_dut_t","CMN Correlation Plot DUT top",254,-.5,254.5,254,-.5,254.5);
-	p_cmn_cor_dut_b = fs->make<TProfile2D>("h_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",254,-.5,254.5,254,-.5,254.5);
+	p_charge_sharing_dut_t = fs->make<TProfile>("p_charge_sharing_dut_t","Charge Sharing Plot DUT top",508,-254.5,254.5);
+	p_charge_sharing_dut_b = fs->make<TProfile>("p_charge_sharing_dut_b","Charge Sharing Plot DUT bottom",508,-254.5,254.5);
 	
-	p_cmn_cor_fix_t = fs->make<TProfile2D>("h_cmn_cor_fix_t","CMN Correlation Plot FIX top",254,-.5,254.5,254,-.5,254.5);
-	p_cmn_cor_fix_b = fs->make<TProfile2D>("h_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",254,-.5,254.5,254,-.5,254.5);
+	p_charge_sharing_fix_t = fs->make<TProfile>("p_charge_sharing_fix_t","Charge Sharing Plot FIX top",508,-254.5,254.5);
+	p_charge_sharing_fix_b = fs->make<TProfile>("p_charge_sharing_fix_b","Charge Sharing Plot FIX bottom",508,-254.5,254.5);
+	
+	p_cmn_cor_dut_t = fs->make<TProfile2D>("p_cmn_cor_dut_t","CMN Correlation Plot DUT top",254,-.5,254.5,254,-.5,254.5);
+	p_cmn_cor_dut_b = fs->make<TProfile2D>("p_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",254,-.5,254.5,254,-.5,254.5);
+	
+	p_cmn_cor_fix_t = fs->make<TProfile2D>("p_cmn_cor_fix_t","CMN Correlation Plot FIX top",254,-.5,254.5,254,-.5,254.5);
+	p_cmn_cor_fix_b = fs->make<TProfile2D>("p_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",254,-.5,254.5,254,-.5,254.5);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
