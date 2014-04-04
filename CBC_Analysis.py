@@ -4,11 +4,9 @@ import os
 import re
 import string
 
-if "BADSTRIPS" in os.environ
-	os.getenv(BADSTRIPS)
-	badstripfile = "%sBADSTRIPS/bad_strips.txt"
-else
-	print 'Please set the $BADSTRIPS variable in the submitter script!'
+os.getenv('BADSTRIPS',"/afs/cern.ch/user/g/gauzinge/tb_data")
+badstripfile = "%sBADSTRIPS/bad_strips.txt"
+print 'Bad Strip File:', badstripfile 
 
 # Filenames for in and outfile
 if len(sys.argv) != 3:
