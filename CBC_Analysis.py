@@ -5,12 +5,14 @@ import re
 import string
 
 # Bad Strip File
-if 'BADSTRIPS' in os.environ
+try:
+	os.environ['BADSTRIPS']
 	os.getenv('BADSTRIPS',"/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
 	badstripfile = os.environ['BADSTRIPS']
 	print 'Bad Strip File:', badstripfile 
-else
+except KeyError:
 	print 'Please set the BADSTRIPS environment variable'
+	sys.exit(1)
 
 # Filenames for in and outfile
 if len(sys.argv) != 3:
