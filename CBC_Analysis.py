@@ -1,7 +1,14 @@
 import FWCore.ParameterSet.Config as cms
 import sys
+import os
 import re
 import string
+
+if "BADSTRIPS" in os.environ
+	os.getenv(BADSTRIPS)
+	badstripfile = "%sBADSTRIPS/bad_strips.txt"
+else
+	print 'Please set the $BADSTRIPS variable in the submitter script!'
 
 # Filenames for in and outfile
 if len(sys.argv) != 3:
@@ -62,12 +69,12 @@ process.conditions = cms.EDAnalyzer('ConditionDecoder')
 # Low Level Analysis
 process.lowlevel = cms.EDAnalyzer('LL_Analysis',
 		 sensors = cms.untracked.vuint32(50001, 50002, 50011, 50012),
-		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
+		 bad_strip_file = cms.string(badstripfile)
 )
 
 # CM Noise Analysis
 process.cmn = cms.EDAnalyzer('CMN_Analysis',
-		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
+		 bad_strip_file = cms.string(badstripfile)
 )
 
 # process.mypath = cms.Path(process.conditions*process.lowlevel)

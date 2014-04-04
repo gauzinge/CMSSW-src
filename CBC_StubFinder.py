@@ -1,6 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 import sys
+import os
 import re
+
+if "BADSTRIPS" in os.environ
+	os.getenv(BADSTRIPS)
+	badstripfile = "%sBADSTRIPS/bad_strips.txt"
+else
+	print 'Please set the $BADSTRIPS variable in the submitter script!'
 
 # Filenames for in and outfile
 if len(sys.argv) != 3:
@@ -47,7 +54,7 @@ process.source = cms.Source("PoolSource",
 process.stubfinder = cms.EDProducer('ClusterAndStubFinder',
          # Stub windowsize is the width of the search window to look for correlated hits. 
          stub_windowsize = cms.uint32(7),
-		 bad_strip_file = cms.string("/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
+		 bad_strip_file = cms.string(badstripfile)
 )
 
 # Output module for Stub Finder output
