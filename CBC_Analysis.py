@@ -4,9 +4,13 @@ import os
 import re
 import string
 
-os.getenv('BADSTRIPS',"/afs/cern.ch/user/g/gauzinge/tb_data")
-badstripfile = "%sBADSTRIPS/bad_strips.txt"
-print 'Bad Strip File:', badstripfile 
+# Bad Strip File
+if 'BADSTRIPS' in os.environ
+	os.getenv('BADSTRIPS',"/afs/cern.ch/user/g/gauzinge/tb_data/bad_strips.txt")
+	badstripfile = os.environ['BADSTRIPS']
+	print 'Bad Strip File:', badstripfile 
+else
+	print 'Please set the BADSTRIPS environment variable'
 
 # Filenames for in and outfile
 if len(sys.argv) != 3:
