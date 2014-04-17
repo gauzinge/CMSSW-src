@@ -88,10 +88,20 @@ public:
 	TH2D* h_cmn_fix_t;
 	TH2D* h_cmn_fix_b;
 	  
-	TProfile* p_charge_sharing_dut_t;
-	TProfile* p_charge_sharing_dut_b;
-	TProfile* p_charge_sharing_fix_t;
-	TProfile* p_charge_sharing_fix_b;
+	// TProfile* p_charge_sharing_dut_t;
+// 	TProfile* p_charge_sharing_dut_b;
+// 	TProfile* p_charge_sharing_fix_t;
+// 	TProfile* p_charge_sharing_fix_b;
+	
+	TProfile* p_charge_sharing_dut_A_t;
+	TProfile* p_charge_sharing_dut_B_t;
+	TProfile* p_charge_sharing_dut_A_b;
+	TProfile* p_charge_sharing_dut_B_b;
+	  
+	TProfile* p_charge_sharing_fix_A_t;
+	TProfile* p_charge_sharing_fix_B_t;
+	TProfile* p_charge_sharing_fix_A_b;
+	TProfile* p_charge_sharing_fix_B_b;
 	  
 	TProfile2D* p_cmn_cor_dut_t;
 	TProfile2D* p_cmn_cor_dut_b;
@@ -219,50 +229,9 @@ void
 			}
 		} //End of hit loop
 		
-		// CMN 2D Profile Loop 
-		// DetSet<PixelDigi>::const_iterator DSiter1;// = DSViter->data.begin();
-		// 		DetSet<PixelDigi>::const_iterator DSiter2;// = DSViter->data.begin();
-		// 	
-		// 		for(DSiter1 = DSViter->data.begin(); DSiter1 != DSViter->data.end(); DSiter1++) // first hit loop
-		// 		{
-		// 			// loop x axis of 2D profile
-		// 			int strip1 = DSiter1->row();
-		// 			
-		// 			for(DSiter2 = DSViter->data.begin(); DSiter2 != DSViter->data.end(); DSiter2++) // second hit loop
-		// 			{
-		// 				int strip2 = DSiter2->row();
-		// 				
-		// 				// here i have the loop over each strip, basically  y in the 2D profile
-		// 				switch (detid)
-		// 				{
-		// 					case 51001: 
-		// 					{
-		// 						p_cmn_cor_dut_t->Fill(strip1,strip2,1);
-		// 						p_charge_sharing_dut_t->Fill(strip1-strip2,1);
-		// 						break;
-		// 					}
-		// 					case 51002: 
-		// 					{
-		// 						p_cmn_cor_dut_b->Fill(strip1,strip2,1);
-		// 						p_charge_sharing_dut_b->Fill(strip1-strip2,1);
-		// 						break;
-		// 					}
-		// 					case 51011: 
-		// 					{
-		// 						p_cmn_cor_fix_t->Fill(strip1,strip2,1);
-		// 						p_charge_sharing_fix_t->Fill(strip1-strip2,1);
-		// 						break;
-		// 					}
-		// 					case 51012: 
-		// 					{
-		// 						p_cmn_cor_fix_b->Fill(strip1,strip2,1);
-		// 						p_charge_sharing_fix_b->Fill(strip1-strip2,1);
-		// 						break;
-		// 					}
-		// 				} //end of 2nd switch
-		// 			} // end of 2nd 2nd hit loop
-		// 		} // end of 2nd 1st hit loop
 		// fill correlation plots
+		// still inside the module loop
+		// TODO: fill charge sharing plots per cbc and sensor!!!
 		for (int i = 0; i < 254; i++)
 		{
 			for (int j = 0; j < 254; j++)
@@ -272,30 +241,30 @@ void
 				{
 					case 51001: 
 					{
-						if(dut_t[i] == 1 && dut_t[j] == 1) fill_value = 1;
+						fill_value = (dut_t[i] == dut_t[j]);
 						p_cmn_cor_dut_t->Fill(i,j,fill_value);
-						p_charge_sharing_dut_t->Fill(i-j,fill_value);
+						// p_charge_sharing_dut_t->Fill(i-j,fill_value);
 						break;
 					}
 					case 51002: 
 					{
-						if(dut_b[i] == 1 && dut_b[j] == 1) fill_value = 1;
+						fill_value = (dut_b[i] == dut_b[j]);
 						p_cmn_cor_dut_b->Fill(i,j,fill_value);
-						p_charge_sharing_dut_b->Fill(i-j,fill_value);
+						// p_charge_sharing_dut_b->Fill(i-j,fill_value);
 						break;
 					}
 					case 51011: 
 					{
-						if(fix_t[i] == 1 && fix_t[j] == 1) fill_value = 1;
+						fill_value = (fix_t[i] == fix_t[j]);
 						p_cmn_cor_fix_t->Fill(i,j,fill_value);
-						p_charge_sharing_fix_t->Fill(i-j,fill_value);
+						// p_charge_sharing_fix_t->Fill(i-j,fill_value);
 						break;
 					}
 					case 51012: 
 					{
-						if(fix_b[i] == 1 && fix_b[j] == 1) fill_value = 1;
+						fill_value = (fix_b[i] == fix_b[j]);
 						p_cmn_cor_fix_b->Fill(i,j,fill_value);
-						p_charge_sharing_fix_b->Fill(i-j,fill_value);
+						// p_charge_sharing_fix_b->Fill(i-j,fill_value);
 						break;
 					}
 				}
@@ -337,15 +306,15 @@ void CMN_Analysis::beginJob()
 	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
 	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
 	
-	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 127,-0.5,127.5);
-	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 127,-0.5,127.5);
-	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 127,-0.5,127.5);
-	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 127,-0.5,127.5);
+	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 128,-0.5,127.5);
+	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 128,-0.5,127.5);
+	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 128,-0.5,127.5);
+	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 128,-0.5,127.5);
 	
-	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 254,-0.5,254.5);
-	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 254,-0.5,254.5);
-	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 254,-0.5,254.5);
-	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 254,-0.5,254.5);
+	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 255,-0.5,254.5);
+	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 255,-0.5,254.5);
+	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 255,-0.5,254.5);
+	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 255,-0.5,254.5);
 	
 	// 2D Histograms for CMN Analysis
 	h_cmn_dut_t = fs->make<TH2D>("h_cmn_dut_t","CMN Raw Data Plot DUT top",254,-.5,254.5,10000,0,10000);
@@ -354,17 +323,30 @@ void CMN_Analysis::beginJob()
 	h_cmn_fix_t = fs->make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,10000,0,10000);
 	h_cmn_fix_b = fs->make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,10000,0,10000);
 	
-	p_charge_sharing_dut_t = fs->make<TProfile>("p_charge_sharing_dut_t","Charge Sharing Plot DUT top",508,-254.5,254.5);
-	p_charge_sharing_dut_b = fs->make<TProfile>("p_charge_sharing_dut_b","Charge Sharing Plot DUT bottom",508,-254.5,254.5);
+	// p_charge_sharing_dut_t = fs->make<TProfile>("p_charge_sharing_dut_t","Charge Sharing Plot DUT top",509,-254.5,254.5);
+// 	p_charge_sharing_dut_b = fs->make<TProfile>("p_charge_sharing_dut_b","Charge Sharing Plot DUT bottom",509,-254.5,254.5);
+// 	
+// 	p_charge_sharing_fix_t = fs->make<TProfile>("p_charge_sharing_fix_t","Charge Sharing Plot FIX top",509,-254.5,254.5);
+// 	p_charge_sharing_fix_b = fs->make<TProfile>("p_charge_sharing_fix_b","Charge Sharing Plot FIX bottom",509,-254.5,254.5);
 	
-	p_charge_sharing_fix_t = fs->make<TProfile>("p_charge_sharing_fix_t","Charge Sharing Plot FIX top",508,-254.5,254.5);
-	p_charge_sharing_fix_b = fs->make<TProfile>("p_charge_sharing_fix_b","Charge Sharing Plot FIX bottom",508,-254.5,254.5);
+	p_charge_sharing_dut_A_t = fs->make<TProfile>("p_charge_sharing_dut_A_t","Charge Sharing Plot DUT CBC A top",255,-127.5,127.5);
+	p_charge_sharing_dut_B_t = fs->make<TProfile>("p_charge_sharing_dut_B_t","Charge Sharing Plot DUT CBC B top",255,-127.5,127.5);
 	
-	p_cmn_cor_dut_t = fs->make<TProfile2D>("p_cmn_cor_dut_t","CMN Correlation Plot DUT top",254,-.5,254.5,254,-.5,254.5);
-	p_cmn_cor_dut_b = fs->make<TProfile2D>("p_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",254,-.5,254.5,254,-.5,254.5);
+	p_charge_sharing_dut_A_b = fs->make<TProfile>("p_charge_sharing_dut_A_b","Charge Sharing Plot DUT CBC A bot",255,-127.5,127.5);
+	p_charge_sharing_dut_B_b = fs->make<TProfile>("p_charge_sharing_dut_B_b","Charge Sharing Plot DUT CBC B bot",255,-127.5,127.5);
 	
-	p_cmn_cor_fix_t = fs->make<TProfile2D>("p_cmn_cor_fix_t","CMN Correlation Plot FIX top",254,-.5,254.5,254,-.5,254.5);
-	p_cmn_cor_fix_b = fs->make<TProfile2D>("p_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",254,-.5,254.5,254,-.5,254.5);
+	p_charge_sharing_fix_A_t = fs->make<TProfile>("p_charge_sharing_fix_A_t","Charge Sharing Plot FIX CBC A top",255,-127.5,127.5);
+	p_charge_sharing_fix_B_t = fs->make<TProfile>("p_charge_sharing_fix_B_t","Charge Sharing Plot FIX CBC B top",255,-127.5,127.5);
+	
+	p_charge_sharing_fix_A_b = fs->make<TProfile>("p_charge_sharing_fix_A_b","Charge Sharing Plot FIX CBC A bot",255,-127.5,127.5);
+	p_charge_sharing_fix_B_b = fs->make<TProfile>("p_charge_sharing_fix_B_b","Charge Sharing Plot FIX CBC B bot",255,-127.5,127.5);
+	
+	
+	p_cmn_cor_dut_t = fs->make<TProfile2D>("p_cmn_cor_dut_t","CMN Correlation Plot DUT top",255,-.5,254.5,254,-.5,254.5);
+	p_cmn_cor_dut_b = fs->make<TProfile2D>("p_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",255,-.5,254.5,254,-.5,254.5);
+	
+	p_cmn_cor_fix_t = fs->make<TProfile2D>("p_cmn_cor_fix_t","CMN Correlation Plot FIX top",255,-.5,254.5,254,-.5,254.5);
+	p_cmn_cor_fix_b = fs->make<TProfile2D>("p_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",255,-.5,254.5,254,-.5,254.5);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------

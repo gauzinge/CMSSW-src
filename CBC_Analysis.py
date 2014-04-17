@@ -53,7 +53,7 @@ process.MessageLogger.cerr.INFO = cms.untracked.PSet(
 
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(False) )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(5000) )
 
 # Infile
 process.source = cms.Source("PoolSource",
