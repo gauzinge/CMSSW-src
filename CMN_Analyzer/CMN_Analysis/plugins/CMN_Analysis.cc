@@ -88,11 +88,6 @@ public:
 	TH2D* h_cmn_fix_t;
 	TH2D* h_cmn_fix_b;
 	  
-	// TProfile* p_charge_sharing_dut_t;
-// 	TProfile* p_charge_sharing_dut_b;
-// 	TProfile* p_charge_sharing_fix_t;
-// 	TProfile* p_charge_sharing_fix_b;
-	
 	TProfile* p_charge_sharing_dut_A;
 	TProfile* p_charge_sharing_dut_B;
 	TProfile* p_charge_sharing_fix_A;
@@ -175,11 +170,6 @@ void
 	int nhits_fix_B = 0;
 	
 	// arrays to "un-zero-supress data for correlation plots!"
-	// int dut_t[254] = {0};
-// 	int dut_b[254] = {0};
-// 	int fix_t[254] = {0};
-// 	int fix_b[254] = {0};
-	
 	int dut[508] = {0};
 	int fix[508] = {0};
 	
@@ -293,45 +283,6 @@ void
 			
 		}
 	}
-	// for (int i = 0; i < 254; i++)
-// 	{
-// 		for (int j = 0; j < 254; j++)
-// 		{
-// 			int fill_value = 0;
-// 			switch (detid)
-// 			{
-// 				case 51001: 
-// 				{
-// 					fill_value = (dut_t[i] == dut_t[j]);
-// 					p_cmn_cor_dut_t->Fill(i,j,fill_value);
-// 					// p_charge_sharing_dut_t->Fill(i-j,fill_value);
-// 					break;
-// 				}
-// 				case 51002: 
-// 				{
-// 					fill_value = (dut_b[i] == dut_b[j]);
-// 					p_cmn_cor_dut_b->Fill(i,j,fill_value);
-// 					// p_charge_sharing_dut_b->Fill(i-j,fill_value);
-// 					break;
-// 				}
-// 				case 51011: 
-// 				{
-// 					fill_value = (fix_t[i] == fix_t[j]);
-// 					p_cmn_cor_fix_t->Fill(i,j,fill_value);
-// 					// p_charge_sharing_fix_t->Fill(i-j,fill_value);
-// 					break;
-// 				}
-// 				case 51012: 
-// 				{
-// 					fill_value = (fix_b[i] == fix_b[j]);
-// 					p_cmn_cor_fix_b->Fill(i,j,fill_value);
-// 					// p_charge_sharing_fix_b->Fill(i-j,fill_value);
-// 					break;
-// 				}
-// 			}
-// 		}
-// 	}
-	
 	
 	//Number of hits per chip for CM Noise
 	h_n_hits_dut_t_A->Fill(nhits_dut_t_A);
