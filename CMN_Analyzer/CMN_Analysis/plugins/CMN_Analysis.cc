@@ -88,26 +88,38 @@ public:
 	TH2D* h_cmn_fix_t;
 	TH2D* h_cmn_fix_b;
 	  
-	TProfile* p_charge_sharing_dut_A;
-	TProfile* p_charge_sharing_dut_B;
-	TProfile* p_charge_sharing_fix_A;
-	TProfile* p_charge_sharing_fix_B;
+	TH1D* h_autocorrelation_dut_A;
+	TH1D* h_autocorrelation_dut_B;
+	TH1D* h_autocorrelation_fix_A;
+	TH1D* h_autocorrelation_fix_B;
 	
-	TProfile* p_charge_sharing_dut_t;
-	TProfile* p_charge_sharing_dut_b;
-	TProfile* p_charge_sharing_fix_t;
-	TProfile* p_charge_sharing_fix_b;
-	  
-	TProfile2D* p_cmn_cor_dut_A;
-	TProfile2D* p_cmn_cor_dut_B;
-	TProfile2D* p_cmn_cor_fix_A;
-	TProfile2D* p_cmn_cor_fix_B;
+	TH1D* h_autocorrelation_dut_t;
+	TH1D* h_autocorrelation_dut_b;
+	TH1D* h_autocorrelation_fix_t;
+	TH1D* h_autocorrelation_fix_b;
 	
-	TProfile2D* p_cmn_cor_dut_t;
-	TProfile2D* p_cmn_cor_dut_b;
-	TProfile2D* p_cmn_cor_fix_t;
-	TProfile2D* p_cmn_cor_fix_b;
-	  
+	// Occupancy Profiles
+	TProfile2D* p_cmn_occ_dut_A;
+	TProfile2D* p_cmn_occ_dut_B;
+	TProfile2D* p_cmn_occ_fix_A;
+	TProfile2D* p_cmn_occ_fix_B;
+	
+	TProfile2D* p_cmn_occ_dut_t;
+	TProfile2D* p_cmn_occ_dut_b;
+	TProfile2D* p_cmn_occ_fix_t;
+	TProfile2D* p_cmn_occ_fix_b;
+	
+	// Correlation Plots
+	TH2D* p_cmn_cor_dut_A;  
+	TH2D* p_cmn_cor_dut_B;  
+	TH2D* p_cmn_cor_fix_A;  
+	TH2D* p_cmn_cor_fix_B;  
+	
+	TH2D* p_cmn_cor_dut_t;  
+	TH2D* p_cmn_cor_dut_b;  
+	TH2D* p_cmn_cor_fix_t;  
+	TH2D* p_cmn_cor_fix_b;  
+	
 	int n_events;
 	
 private:
@@ -232,56 +244,92 @@ void
 		} //End of hit loop
 	} //End of module loop
 	
-	// fill correlation plots
+	// fill occupancy plots
 	for (int i = 0; i < 508; i++)
 	{
+		// initialize fill values for autocorrelogram
+		double fill_dut_A = 0;
+		double fill_dut_B = 0;
+		
+		double fill_fix_A = 0;
+		double fill_fix_B = 0;
+		
+		double fill_dut_t = 0;
+		double fill_dut_b = 0;
+		
+		double fill_fix_t = 0;
+		double fill_fix_b = 0;
+		
 		for (int j = 0; j < 508; j++)
 		{
 			int fill_value_dut = 0;
-			fill_value_dut = (dut[i] == dut[j]);
+			if (dut[i] && dut[j]) fill_value_dut = 1;
 			
 			int fill_value_fix = 0;
-			fill_value_fix = (fix[i] == fix[j]);
+			if (fix[i] && fix[j]) fill_value_fix = 1;
 			
 			// per cbc
 			if (i < 254 && j < 254) // CBC A
 			{
-				p_cmn_cor_dut_A->Fill(i,j,fill_value_dut);
-				p_cmn_cor_fix_A->Fill(i,j,fill_value_fix);
+				// occupancy profile
+				p_cmn_occ_dut_A->Fill(i,j,fill_value_dut);
+				p_cmn_occ_fix_A->Fill(i,j,fill_value_fix);
 				
-				p_charge_sharing_dut_A->Fill(i-j,fill_value_dut);
-				p_charge_sharing_fix_A->Fill(i-j,fill_value_fix);
+				// fill value for autocorrelogram
+				fill_dut_A += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
+				fill_fix_A += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
 			}
 			else if (i >= 254 && j >= 254) // CBC B
 			{
-				p_cmn_cor_dut_B->Fill(i-254,j-254,fill_value_dut);
-				p_cmn_cor_fix_B->Fill(i-254,j-254,fill_value_fix);
+				p_cmn_occ_dut_B->Fill(i-254,j-254,fill_value_dut);
+				p_cmn_occ_fix_B->Fill(i-254,j-254,fill_value_fix);
 				
-				p_charge_sharing_dut_B->Fill(i-j,fill_value_dut);
-				p_charge_sharing_fix_B->Fill(i-j,fill_value_fix);
+				// fill value for autocorrelogram
+				fill_dut_B += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
+				fill_fix_B += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
 			}
 			
 			// per sensor
 			if (i%2 == 0 && j%2 == 0) // even numbers, top sensor
 			{
-				p_cmn_cor_dut_t->Fill(i/2,j/2,fill_value_dut);
-				p_cmn_cor_fix_t->Fill(i/2,j/2,fill_value_fix);
+				p_cmn_occ_dut_t->Fill(i/2,j/2,fill_value_dut);
+				p_cmn_occ_fix_t->Fill(i/2,j/2,fill_value_fix);
 				
-				// TODO: this needs some thinking
-				p_charge_sharing_dut_t->Fill(i-j,fill_value_dut);
-				p_charge_sharing_fix_t->Fill(i-j,fill_value_fix);
+				// fill value for autocorrelogram
+				fill_dut_t += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
+				fill_fix_t += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
 			}
-			else if (i%2 != 0 && j%2 != 0)  // odd numbers, bot sensor
+			else if (i%2 != 0 && j%2 != 0)  // odd numbers, bottom sensor
 			{
-				p_cmn_cor_dut_b->Fill(int(i/2),int(j/2),fill_value_dut);
-				p_cmn_cor_fix_b->Fill(int(i/2),int(j/2),fill_value_fix);
+				p_cmn_occ_dut_b->Fill(int(i/2),int(j/2),fill_value_dut);
+				p_cmn_occ_fix_b->Fill(int(i/2),int(j/2),fill_value_fix);
 				
-				// TODO: this needs some thinking
-				p_charge_sharing_dut_b->Fill(i-j,fill_value_dut);
-				p_charge_sharing_fix_b->Fill(i-j,fill_value_fix);
+				// fill value for autocorrelogram
+				fill_dut_b += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
+				fill_fix_b += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
 			}
 			
 		}
+		if (i < 254) // CBC A
+		{
+			h_autocorrelation_dut_A->SetBinContent(i,fill_dut_A);
+			h_autocorrelation_fix_A->SetBinContent(i,fill_fix_A);
+		}
+		else if (i >= 254)
+		{
+			h_autocorrelation_dut_B->SetBinContent(i-254,fill_dut_B);
+			h_autocorrelation_fix_B->SetBinContent(i-254,fill_fix_B);
+		}
+		if (i%2 == 0) // top sensor
+		{
+			h_autocorrelation_dut_t->SetBinContent(i/2,fill_dut_t);
+			h_autocorrelation_fix_t->SetBinContent(i/2,fill_fix_t);
+		} 
+		else if (i%2 != 0) // top sensor
+		{
+			h_autocorrelation_dut_b->SetBinContent(i/2,fill_dut_b);
+			h_autocorrelation_fix_b->SetBinContent(i/2,fill_fix_b);
+		} 
 	}
 	
 	//Number of hits per chip for CM Noise
@@ -314,20 +362,20 @@ void CMN_Analysis::beginJob()
     TFileDirectory fixDir = fs->mkdir( "FIX" );
 	
 	//Hit Distribution
-	h_n_hits_dut_t_A = fs->make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 128,-0.5,127.5);
-	h_n_hits_dut_t_B = fs->make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 128,-0.5,127.5);
-	h_n_hits_dut_b_A = fs->make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
-	h_n_hits_dut_b_B = fs->make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
+	h_n_hits_dut_t_A = dutDir.make<TH1D>("h_n_hits_dut_t_A","Number of Hits DUT_T chip A", 128,-0.5,127.5);
+	h_n_hits_dut_t_B = dutDir.make<TH1D>("h_n_hits_dut_t_B","Number of Hits DUT_T chip B", 128,-0.5,127.5);
+	h_n_hits_dut_b_A = dutDir.make<TH1D>("h_n_hits_dut_b_A","Number of Hits DUT_B chip A", 128,-0.5,127.5);
+	h_n_hits_dut_b_B = dutDir.make<TH1D>("h_n_hits_dut_b_B","Number of Hits DUT_B chip B", 128,-0.5,127.5);
 	
-	h_n_hits_fix_t_A = fs->make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 128,-0.5,127.5);
-	h_n_hits_fix_t_B = fs->make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 128,-0.5,127.5);
-	h_n_hits_fix_b_A = fs->make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 128,-0.5,127.5);
-	h_n_hits_fix_b_B = fs->make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 128,-0.5,127.5);
+	h_n_hits_fix_t_A = fixDir.make<TH1D>("h_n_hits_fix_t_A","Number of Hits FIX_T chip A", 128,-0.5,127.5);
+	h_n_hits_fix_t_B = fixDir.make<TH1D>("h_n_hits_fix_t_B","Number of Hits FIX_T chip B", 128,-0.5,127.5);
+	h_n_hits_fix_b_A = fixDir.make<TH1D>("h_n_hits_fix_b_A","Number of Hits FIX_B chip A", 128,-0.5,127.5);
+	h_n_hits_fix_b_B = fixDir.make<TH1D>("h_n_hits_fix_b_B","Number of Hits FIX_B chip B", 128,-0.5,127.5);
 	
-	h_n_hits_dut_A = fs->make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 255,-0.5,254.5);
-	h_n_hits_dut_B = fs->make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 255,-0.5,254.5);
-	h_n_hits_fix_A = fs->make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 255,-0.5,254.5);
-	h_n_hits_fix_B = fs->make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 255,-0.5,254.5);
+	h_n_hits_dut_A = dutDir.make<TH1D>("h_n_hits_dut_A","Number of Hits DUT chip A", 255,-0.5,254.5);
+	h_n_hits_dut_B = dutDir.make<TH1D>("h_n_hits_dut_B","Number of Hits DUT chip B", 255,-0.5,254.5);
+	h_n_hits_fix_A = fixDir.make<TH1D>("h_n_hits_fix_A","Number of Hits FIX chip A", 255,-0.5,254.5);
+	h_n_hits_fix_B = fixDir.make<TH1D>("h_n_hits_fix_B","Number of Hits FIX chip B", 255,-0.5,254.5);
 	
 	// 2D Histograms for CMN Analysis
 	h_cmn_dut_t = dutDir.make<TH2D>("h_cmn_dut_t","CMN Raw Data Plot DUT top",254,-.5,254.5,10000,0,10000);
@@ -336,31 +384,66 @@ void CMN_Analysis::beginJob()
 	h_cmn_fix_t = fixDir.make<TH2D>("h_cmn_fix_t","CMN Raw Data Plot FIX top",254,-.5,254.5,10000,0,10000);
 	h_cmn_fix_b = fixDir.make<TH2D>("h_cmn_fix_b","CMN Raw Data Plot FIX bottom",254,-.5,254.5,10000,0,10000);
 	
-	p_charge_sharing_dut_A = dutDir.make<TProfile>("p_charge_sharing_dut_A","Charge Sharing Plot DUT CBC A",509,-254.5,254.5);
-	p_charge_sharing_dut_B = dutDir.make<TProfile>("p_charge_sharing_dut_B","Charge Sharing Plot DUT CBC B",509,-254.5,254.5);
-	p_charge_sharing_fix_A = fixDir.make<TProfile>("p_charge_sharing_fix_A","Charge Sharing Plot FIX CBC A",509,-254.5,254.5);
-	p_charge_sharing_fix_B = fixDir.make<TProfile>("p_charge_sharing_fix_B","Charge Sharing Plot FIX CBC B",509,-254.5,254.5);
+	h_autocorrelation_dut_A = dutDir.make<TH1D>("h_autocorrelation_dut_A","Autocorrelation Plot DUT CBC A",255,-0.5,254.5);
+	h_autocorrelation_dut_B = dutDir.make<TH1D>("h_autocorrelation_dut_B","Autocorrelation Plot DUT CBC B",255,-0.5,254.5);
+	h_autocorrelation_fix_A = fixDir.make<TH1D>("h_autocorrelation_fix_A","Autocorrelation Plot FIX CBC A",255,-0.5,254.5);
+	h_autocorrelation_fix_B = fixDir.make<TH1D>("h_autocorrelation_fix_B","Autocorrelation Plot FIX CBC B",255,-0.5,254.5);
 	
-	p_charge_sharing_dut_t = dutDir.make<TProfile>("p_charge_sharing_dut_t","Charge Sharing Plot DUT top",509,-254.5,254.5);
-	p_charge_sharing_dut_b = dutDir.make<TProfile>("p_charge_sharing_dut_b","Charge Sharing Plot DUT bottom",509,-254.5,254.5);
-	p_charge_sharing_fix_t = fixDir.make<TProfile>("p_charge_sharing_fix_t","Charge Sharing Plot FIX top",509,-254.5,254.5);
-	p_charge_sharing_fix_b = fixDir.make<TProfile>("p_charge_sharing_fix_b","Charge Sharing Plot FIX bottom",509,-254.5,254.5);
+	h_autocorrelation_dut_t = dutDir.make<TH1D>("h_autocorrelation_dut_t","Autocorrelation Plot DUT top",255,-0.5,254.5);
+	h_autocorrelation_dut_b = dutDir.make<TH1D>("h_autocorrelation_dut_b","Autocorrelation Plot DUT bottom",255,-0.5,254.5);
+	h_autocorrelation_fix_t = fixDir.make<TH1D>("h_autocorrelation_fix_t","Autocorrelation Plot FIX top",255,-0.5,254.5);
+	h_autocorrelation_fix_b = fixDir.make<TH1D>("h_autocorrelation_fix_b","Autocorrelation Plot FIX bottom",255,-0.5,254.5);
 	
-	p_cmn_cor_dut_A = dutDir.make<TProfile2D>("p_cmn_cor_dut_A","CMN Correlation Plot DUT CBC A",255,-.5,254.5,255,-.5,254.5);
-	p_cmn_cor_dut_B = dutDir.make<TProfile2D>("p_cmn_cor_dut_B","CMN Correlation Plot DUT CBC B",255,-.5,254.5,255,-.5,254.5);
-	p_cmn_cor_fix_A = fixDir.make<TProfile2D>("p_cmn_cor_fix_A","CMN Correlation Plot FIX CBC A",255,-.5,254.5,255,-.5,254.5);
-	p_cmn_cor_fix_B = fixDir.make<TProfile2D>("p_cmn_cor_fix_B","CMN Correlation Plot FIX CBC B",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_dut_A = dutDir.make<TProfile2D>("p_cmn_occ_dut_A","CMN Occupancy Plot DUT CBC A",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_dut_B = dutDir.make<TProfile2D>("p_cmn_occ_dut_B","CMN Occupancy Plot DUT CBC B",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_fix_A = fixDir.make<TProfile2D>("p_cmn_occ_fix_A","CMN Occupancy Plot FIX CBC A",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_fix_B = fixDir.make<TProfile2D>("p_cmn_occ_fix_B","CMN Occupancy Plot FIX CBC B",255,-.5,254.5,255,-.5,254.5);
 	
-	p_cmn_cor_dut_t = dutDir.make<TProfile2D>("p_cmn_cor_dut_t","CMN Correlation Plot DUT top",255,-.5,254.5,255,-.5,254.5);
-	p_cmn_cor_dut_b = dutDir.make<TProfile2D>("p_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",255,-.5,254.5,255,-.5,254.5);
-	p_cmn_cor_fix_t = fixDir.make<TProfile2D>("p_cmn_cor_fix_t","CMN Correlation Plot FIX top",255,-.5,254.5,255,-.5,254.5);
-	p_cmn_cor_fix_b = fixDir.make<TProfile2D>("p_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_dut_t = dutDir.make<TProfile2D>("p_cmn_occ_dut_t","CMN Occupancy Plot DUT top",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_dut_b = dutDir.make<TProfile2D>("p_cmn_occ_dut_b","CMN Occupancy Plot DUT bottom",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_fix_t = fixDir.make<TProfile2D>("p_cmn_occ_fix_t","CMN Occupancy Plot FIX top",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_occ_fix_b = fixDir.make<TProfile2D>("p_cmn_occ_fix_b","CMN Occupancy Plot FIX bottom",255,-.5,254.5,255,-.5,254.5);
+	
+	p_cmn_cor_dut_A = dutDir.make<TH2D>("p_cmn_cor_dut_A","CMN Correlation Plot DUT CBC A",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_cor_dut_B = dutDir.make<TH2D>("p_cmn_cor_dut_B","CMN Correlation Plot DUT CBC B",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_cor_fix_A = fixDir.make<TH2D>("p_cmn_cor_fix_A","CMN Correlation Plot FIX CBC A",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_cor_fix_B = fixDir.make<TH2D>("p_cmn_cor_fix_B","CMN Correlation Plot FIX CBC B",255,-.5,254.5,255,-.5,254.5);
+	
+	p_cmn_cor_dut_t = dutDir.make<TH2D>("p_cmn_cor_dut_t","CMN Correlation Plot DUT top",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_cor_dut_b = dutDir.make<TH2D>("p_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_cor_fix_t = fixDir.make<TH2D>("p_cmn_cor_fix_t","CMN Correlation Plot FIX top",255,-.5,254.5,255,-.5,254.5);
+	p_cmn_cor_fix_b = fixDir.make<TH2D>("p_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",255,-.5,254.5,255,-.5,254.5);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
 void 
 	CMN_Analysis::endJob() 
 {
+	// fill another TH2D with frac(Oxy-OxOy)(sqrt(Ox-Ox^2)*sqrt(Oy-Oy^2)) 
+	// where Oxy is TProfile2D->GetBinContent(x,y) and Ox is TProfile2D->GetBinContent(x,x)
+	// GetBinContent is overloaded with []
+	for (int i = 0; i < 255; i++)
+	{
+		for (int j = 0; j < 255; j++)
+		{
+			p_cmn_cor_dut_A->SetBinContent(i,j,(p_cmn_occ_dut_A->GetBinContent(i,j) - p_cmn_occ_dut_A->GetBinContent(i,i)*p_cmn_occ_dut_A->GetBinContent(j,j))/(sqrt(p_cmn_occ_dut_A->GetBinContent(i,i)-pow(p_cmn_occ_dut_A->GetBinContent(i,i),2))*sqrt(p_cmn_occ_dut_A->GetBinContent(j,j)-pow(p_cmn_occ_dut_A->GetBinContent(j,j),2))));
+			
+			p_cmn_cor_dut_B->SetBinContent(i,j,(p_cmn_occ_dut_B->GetBinContent(i,j) - p_cmn_occ_dut_B->GetBinContent(i,i)*p_cmn_occ_dut_B->GetBinContent(j,j)) / (sqrt(p_cmn_occ_dut_B->GetBinContent(i,i)-pow(p_cmn_occ_dut_B->GetBinContent(i,i),2))*sqrt(p_cmn_occ_dut_B->GetBinContent(j,j)-pow(p_cmn_occ_dut_B->GetBinContent(j,j),2))));
+			
+			p_cmn_cor_fix_A->SetBinContent(i,j,(p_cmn_occ_fix_A->GetBinContent(i,j) - p_cmn_occ_fix_A->GetBinContent(i,i)*p_cmn_occ_fix_A->GetBinContent(j,j)) / (sqrt(p_cmn_occ_fix_A->GetBinContent(i,i)-pow(p_cmn_occ_fix_A->GetBinContent(i,i),2))*sqrt(p_cmn_occ_fix_A->GetBinContent(j,j)-pow(p_cmn_occ_fix_A->GetBinContent(j,j),2))));
+			
+			p_cmn_cor_fix_B->SetBinContent(i,j,(p_cmn_occ_fix_B->GetBinContent(i,j) - p_cmn_occ_fix_B->GetBinContent(i,i)*p_cmn_occ_fix_B->GetBinContent(j,j)) / (sqrt(p_cmn_occ_fix_B->GetBinContent(i,i)-pow(p_cmn_occ_fix_B->GetBinContent(i,i),2))*sqrt(p_cmn_occ_fix_B->GetBinContent(j,j)-pow(p_cmn_occ_fix_B->GetBinContent(j,j),2))));
+			
+			
+			p_cmn_cor_dut_t->SetBinContent(i,j,(p_cmn_occ_dut_t->GetBinContent(i,j) - p_cmn_occ_dut_t->GetBinContent(i,i)*p_cmn_occ_dut_t->GetBinContent(j,j)) / (sqrt(p_cmn_occ_dut_t->GetBinContent(i,i)-pow(p_cmn_occ_dut_t->GetBinContent(i,i),2))*sqrt(p_cmn_occ_dut_t->GetBinContent(j,j)-pow(p_cmn_occ_dut_t->GetBinContent(j,j),2))));
+			
+			p_cmn_cor_dut_b->SetBinContent(i,j,(p_cmn_occ_dut_b->GetBinContent(i,j) - p_cmn_occ_dut_b->GetBinContent(i,i)*p_cmn_occ_dut_b->GetBinContent(j,j)) / (sqrt(p_cmn_occ_dut_b->GetBinContent(i,i)-pow(p_cmn_occ_dut_b->GetBinContent(i,i),2))*sqrt(p_cmn_occ_dut_b->GetBinContent(j,j)-pow(p_cmn_occ_dut_b->GetBinContent(j,j),2))));
+			
+			p_cmn_cor_fix_t->SetBinContent(i,j,(p_cmn_occ_fix_t->GetBinContent(i,j) - p_cmn_occ_fix_t->GetBinContent(i,i)*p_cmn_occ_fix_t->GetBinContent(j,j)) / (sqrt(p_cmn_occ_fix_t->GetBinContent(i,i)-pow(p_cmn_occ_fix_t->GetBinContent(i,i),2))*sqrt(p_cmn_occ_fix_t->GetBinContent(j,j)-pow(p_cmn_occ_fix_t->GetBinContent(j,j),2))));
+			
+			p_cmn_cor_fix_b->SetBinContent(i,j,(p_cmn_occ_fix_b->GetBinContent(i,j) - p_cmn_occ_fix_b->GetBinContent(i,i)*p_cmn_occ_fix_b->GetBinContent(j,j)) / (sqrt(p_cmn_occ_fix_b->GetBinContent(i,i)-pow(p_cmn_occ_fix_b->GetBinContent(i,i),2))*sqrt(p_cmn_occ_fix_b->GetBinContent(j,j)-pow(p_cmn_occ_fix_b->GetBinContent(j,j),2))));
+		}
+	}
 }
 
 void
