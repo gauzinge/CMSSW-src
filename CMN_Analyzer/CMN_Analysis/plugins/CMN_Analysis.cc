@@ -256,6 +256,23 @@ void
 		} //End of hit loop
 	} //End of module loop
 	
+	// set strip 10 to 1 and strip 11 to 0 with 10% probability
+	// strip 10 on each module array (dut[],fix[]) is 20 for the top sensor and 21 for the bottom, 11 is 22 on top and 23 on bottom
+	double val = (double)rand() / RAND_MAX;
+	if (val < 0.1)
+	{
+		for (int i = 20; i < 24; i++)
+		{
+			if (i%2 == 0) //strip 10
+			{
+				fix[i] = 1; dut[i] = 1;
+			}
+			else //strip 11
+			{
+				fix[i] = 0; dut[i] = 0;
+			}
+		}
+	}
 	// fill occupancy plots
 	for (int i = 0; i < 508; i++)
 	{
@@ -382,6 +399,8 @@ void
 void CMN_Analysis::beginJob()
 {
 	n_events = 0;
+	
+	srand(time(NULL));
 	
 	edm::Service<TFileService> fs;
     TFileDirectory dutDir = fs->mkdir( "DUT" );
