@@ -87,7 +87,8 @@ public:
 	TH2D* h_cmn_dut_b;
 	TH2D* h_cmn_fix_t;
 	TH2D* h_cmn_fix_b;
-	  
+	
+	// autocorrelation plots
 	TH1D* h_autocorrelation_dut_A;
 	TH1D* h_autocorrelation_dut_B;
 	TH1D* h_autocorrelation_fix_A;
@@ -120,6 +121,17 @@ public:
 	TH2D* p_cmn_cor_fix_t;  
 	TH2D* p_cmn_cor_fix_b;  
 	
+	// charge sharing plots
+	TProfile* p_charge_sharing_dut_A;
+	TProfile* p_charge_sharing_dut_B;
+	TProfile* p_charge_sharing_fix_A;
+	TProfile* p_charge_sharing_fix_B;
+
+	TProfile* p_charge_sharing_dut_t;
+	TProfile* p_charge_sharing_dut_b;
+	TProfile* p_charge_sharing_fix_t;
+	TProfile* p_charge_sharing_fix_b;
+		
 	int n_events;
 	
 private:
@@ -278,6 +290,10 @@ void
 				// fill value for autocorrelogram
 				fill_dut_A += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
 				fill_fix_A += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
+				
+				// charge sharing plots
+				p_charge_sharing_dut_A->Fill(i-j,fill_value_dut);
+				p_charge_sharing_fix_A->Fill(i-j,fill_value_fix);
 			}
 			else if (i >= 254 && j >= 254) // CBC B
 			{
@@ -287,6 +303,10 @@ void
 				// fill value for autocorrelogram
 				fill_dut_B += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
 				fill_fix_B += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
+				
+				// charge sharing plots
+				p_charge_sharing_dut_B->Fill(i-j,fill_value_dut);
+				p_charge_sharing_fix_B->Fill(i-j,fill_value_fix);
 			}
 			
 			// per sensor
@@ -298,6 +318,9 @@ void
 				// fill value for autocorrelogram
 				fill_dut_t += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
 				fill_fix_t += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
+				
+				p_charge_sharing_dut_t->Fill((i-j)/2,fill_value_dut);
+				p_charge_sharing_fix_t->Fill((i-j)/2,fill_value_fix);
 			}
 			else if (i%2 != 0 && j%2 != 0)  // odd numbers, bottom sensor
 			{
@@ -307,6 +330,9 @@ void
 				// fill value for autocorrelogram
 				fill_dut_b += (2*dut[j]-1)*(2*dut[(j+i)%254]-1);
 				fill_fix_b += (2*fix[j]-1)*(2*fix[(j+i)%254]-1);
+				
+				p_charge_sharing_dut_b->Fill((i-j)/2,fill_value_dut);
+				p_charge_sharing_fix_b->Fill((i-j)/2,fill_value_fix);
 			}
 			
 		}
@@ -413,6 +439,16 @@ void CMN_Analysis::beginJob()
 	p_cmn_cor_dut_b = dutDir.make<TH2D>("p_cmn_cor_dut_b","CMN Correlation Plot DUT bottom",255,-.5,254.5,255,-.5,254.5);
 	p_cmn_cor_fix_t = fixDir.make<TH2D>("p_cmn_cor_fix_t","CMN Correlation Plot FIX top",255,-.5,254.5,255,-.5,254.5);
 	p_cmn_cor_fix_b = fixDir.make<TH2D>("p_cmn_cor_fix_b","CMN Correlation Plot FIX bottom",255,-.5,254.5,255,-.5,254.5);
+	
+	p_charge_sharing_dut_A = dutDir.make<TProfile>("p_charge_sharing_dut_A","Charge Sharing Plot DUT CBC A",509,-254.5,254.5);
+	p_charge_sharing_dut_B = dutDir.make<TProfile>("p_charge_sharing_dut_B","Charge Sharing Plot DUT CBC B",509,-254.5,254.5);
+	p_charge_sharing_fix_A = fixDir.make<TProfile>("p_charge_sharing_fix_A","Charge Sharing Plot FIX CBC A",509,-254.5,254.5);
+	p_charge_sharing_fix_B = fixDir.make<TProfile>("p_charge_sharing_fix_B","Charge Sharing Plot FIX CBC B",509,-254.5,254.5);
+
+	p_charge_sharing_dut_t = dutDir.make<TProfile>("p_charge_sharing_dut_t","Charge Sharing Plot DUT top",509,-254.5,254.5);
+	p_charge_sharing_dut_b = dutDir.make<TProfile>("p_charge_sharing_dut_b","Charge Sharing Plot DUT bottom",509,-254.5,254.5);
+	p_charge_sharing_fix_t = fixDir.make<TProfile>("p_charge_sharing_fix_t","Charge Sharing Plot FIX top",509,-254.5,254.5);
+	p_charge_sharing_fix_b = fixDir.make<TProfile>("p_charge_sharing_fix_b","Charge Sharing Plot FIX bottom",509,-254.5,254.5);
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
