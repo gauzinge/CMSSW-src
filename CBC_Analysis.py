@@ -43,7 +43,7 @@ process = cms.Process("CBCAnalysis")
 
 
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.FwkReport.reportEvery = 10000
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.MessageLogger.cerr.threshold = 'INFO'
 process.MessageLogger.categories.append('CBC_Analysis')
 process.MessageLogger.cerr.INFO = cms.untracked.PSet(
